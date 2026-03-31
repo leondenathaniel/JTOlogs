@@ -16,6 +16,10 @@ public class AdminDashboard extends javax.swing.JFrame {
     public AdminDashboard() {
         initComponents();
     }
+    
+    public void setUser(String username, String role) {
+    lblCurrentUser.setText("User: " + username + " (" + role + ")");
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.

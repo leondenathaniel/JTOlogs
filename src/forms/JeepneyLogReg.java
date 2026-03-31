@@ -4,6 +4,8 @@
  */
 package forms;
 
+import dataaccess.User;
+import javax.swing.JOptionPane;
 /**
  *
  * @author Administrator
@@ -16,7 +18,7 @@ public class JeepneyLogReg extends javax.swing.JFrame {
     public JeepneyLogReg() {
         initComponents();
     }
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -32,11 +34,11 @@ public class JeepneyLogReg extends javax.swing.JFrame {
         txtPassword = new javax.swing.JLabel();
         txtUsername = new javax.swing.JLabel();
         btnLogin = new javax.swing.JButton();
-        jtfPassword = new javax.swing.JTextField();
         jtfUsername = new javax.swing.JTextField();
         lblLogo = new javax.swing.JLabel();
         jcbRoles = new javax.swing.JComboBox<>();
         lblSubtitle = new javax.swing.JLabel();
+        jpfPassword = new javax.swing.JPasswordField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -73,7 +75,6 @@ public class JeepneyLogReg extends javax.swing.JFrame {
             }
         });
         jPanel1.add(btnLogin, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 620, 240, 50));
-        jPanel1.add(jtfPassword, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 520, 290, 50));
         jPanel1.add(jtfUsername, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 430, 290, 50));
 
         lblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/logo-new.png"))); // NOI18N
@@ -86,6 +87,7 @@ public class JeepneyLogReg extends javax.swing.JFrame {
         lblSubtitle.setForeground(new java.awt.Color(153, 153, 153));
         lblSubtitle.setText("Login to Continue");
         jPanel1.add(lblSubtitle, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 310, -1, -1));
+        jPanel1.add(jpfPassword, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 520, 290, 50));
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
@@ -93,7 +95,39 @@ public class JeepneyLogReg extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
-        // TODO add your handling code here:
+        
+    String username = jtfUsername.getText();
+    String password = new String(jpfPassword.getPassword());
+
+
+    if (username.isEmpty() || password.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Please fill in all fields.");
+        return;
+    }
+
+    User dao = new User();
+    String role = dao.login(username, password);
+
+    if (role != null) {
+
+
+        JOptionPane.showMessageDialog(this, "Login successful!");
+
+
+        AdminDashboard dashboard = new AdminDashboard();
+
+
+        dashboard.setUser(username, role);
+
+        dashboard.setVisible(true);
+
+
+        this.dispose();
+
+    } else {
+
+        JOptionPane.showMessageDialog(this, "Invalid username or password.");
+    }
     }//GEN-LAST:event_btnLoginActionPerformed
 
     /**
@@ -135,7 +169,7 @@ public class JeepneyLogReg extends javax.swing.JFrame {
     private javax.swing.JButton btnLogin;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JComboBox<String> jcbRoles;
-    private javax.swing.JTextField jtfPassword;
+    private javax.swing.JPasswordField jpfPassword;
     private javax.swing.JTextField jtfUsername;
     private javax.swing.JLabel lblLogo;
     private javax.swing.JLabel lblRoles;
