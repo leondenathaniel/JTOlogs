@@ -1,8 +1,11 @@
+package forms;
+
+import java.awt.CardLayout;
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package forms;
 
 /**
  *
@@ -15,12 +18,32 @@ public class AdminDashboard extends javax.swing.JFrame {
      */
     public AdminDashboard() {
         initComponents();
+
+    // Add the panels to the CardLayout using card names
+    pnlContent.add(pnlHome, "HOME");
+    pnlContent.add(pnlQueue, "QUEUE");
+    pnlContent.add(pnlJeepneys, "JEEPNEY");
+    pnlContent.add(pnlDrivers, "DRIVER");
+    pnlContent.add(pnlTripHistory, "TRIPHISTORY");
+    pnlContent.add(pnlAccounts, "ACCOUNTS");
+    pnlContent.add(pnlReports, "REPORTS");
+
+    // Show Home panel first when dashboard opens
+    showPanel("HOME");
+
     }
+
+    
     
     public void setUser(String username, String role) {
     lblCurrentUser.setText("User: " + username + " (" + role + ")");
     }
-
+    
+    private void showPanel(String panelName) {
+    CardLayout card = (CardLayout) pnlContent.getLayout(); // Get the CardLayout from the center panel
+    card.show(pnlContent, panelName); // Show the panel whose name matches panelName
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -60,6 +83,8 @@ public class AdminDashboard extends javax.swing.JFrame {
         jTable4 = new javax.swing.JTable();
         lblJeepneyTitle3 = new javax.swing.JLabel();
         jPanel15 = new javax.swing.JPanel();
+        btnAddToQueue9 = new javax.swing.JButton();
+        btnAddToQueue12 = new javax.swing.JButton();
         jLabel26 = new javax.swing.JLabel();
         jTextField6 = new javax.swing.JTextField();
         jLabel27 = new javax.swing.JLabel();
@@ -71,14 +96,12 @@ public class AdminDashboard extends javax.swing.JFrame {
         jLabel29 = new javax.swing.JLabel();
         btnAddToQueue7 = new javax.swing.JButton();
         btnAddToQueue8 = new javax.swing.JButton();
-        btnAddToQueue9 = new javax.swing.JButton();
         jLabel31 = new javax.swing.JLabel();
         jTextField8 = new javax.swing.JTextField();
-        btnAddToQueue12 = new javax.swing.JButton();
         jLabel24 = new javax.swing.JLabel();
         jLabel25 = new javax.swing.JLabel();
-        btnRefreshQueue7 = new javax.swing.JButton();
         btnAddToQueue10 = new javax.swing.JButton();
+        btnRefreshQueue7 = new javax.swing.JButton();
         pnlTripHistory = new javax.swing.JPanel();
         lblJeepneyTitle2 = new javax.swing.JLabel();
         jScrollPane5 = new javax.swing.JScrollPane();
@@ -184,6 +207,8 @@ public class AdminDashboard extends javax.swing.JFrame {
         lblDashboardSubtitle.setText("Admin Dashboard - Welcome, admin");
 
         btnLogout.setBackground(new java.awt.Color(177, 0, 0));
+        btnLogout.setFont(new java.awt.Font("Trebuchet MS", 1, 12)); // NOI18N
+        btnLogout.setForeground(new java.awt.Color(255, 255, 255));
         btnLogout.setText("LOGOUT");
         btnLogout.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -210,11 +235,11 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblSystemTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblDashboardSubtitle, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 479, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 449, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblCurrentUser, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblCurrentDateTime, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(163, 163, 163)
+                    .addComponent(lblCurrentUser, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblCurrentDateTime, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnLogout, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -250,10 +275,20 @@ public class AdminDashboard extends javax.swing.JFrame {
         btnHome.setBackground(new java.awt.Color(255, 255, 255));
         btnHome.setForeground(new java.awt.Color(0, 0, 0));
         btnHome.setText("Home");
+        btnHome.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnHomeActionPerformed(evt);
+            }
+        });
 
         btnJeepneys.setBackground(new java.awt.Color(255, 255, 255));
         btnJeepneys.setForeground(new java.awt.Color(0, 0, 0));
         btnJeepneys.setText("Jeepneys");
+        btnJeepneys.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnJeepneysActionPerformed(evt);
+            }
+        });
 
         btnDrivers.setBackground(new java.awt.Color(255, 255, 255));
         btnDrivers.setForeground(new java.awt.Color(0, 0, 0));
@@ -267,18 +302,38 @@ public class AdminDashboard extends javax.swing.JFrame {
         btnTripHistory.setBackground(new java.awt.Color(255, 255, 255));
         btnTripHistory.setForeground(new java.awt.Color(0, 0, 0));
         btnTripHistory.setText("Trip History");
+        btnTripHistory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTripHistoryActionPerformed(evt);
+            }
+        });
 
         btnAccounts.setBackground(new java.awt.Color(255, 255, 255));
         btnAccounts.setForeground(new java.awt.Color(0, 0, 0));
         btnAccounts.setText("Accounts");
+        btnAccounts.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAccountsActionPerformed(evt);
+            }
+        });
 
         btnReports.setBackground(new java.awt.Color(255, 255, 255));
         btnReports.setForeground(new java.awt.Color(0, 0, 0));
         btnReports.setText("Reports");
+        btnReports.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReportsActionPerformed(evt);
+            }
+        });
 
         btnQueue.setBackground(new java.awt.Color(255, 255, 255));
         btnQueue.setForeground(new java.awt.Color(0, 0, 0));
         btnQueue.setText("Queue");
+        btnQueue.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnQueueActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -425,6 +480,26 @@ public class AdminDashboard extends javax.swing.JFrame {
 
         jPanel15.setBackground(new java.awt.Color(255, 255, 255));
 
+        btnAddToQueue9.setBackground(new java.awt.Color(204, 51, 0));
+        btnAddToQueue9.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnAddToQueue9.setForeground(new java.awt.Color(255, 255, 255));
+        btnAddToQueue9.setText("Change Password");
+        btnAddToQueue9.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddToQueue9ActionPerformed(evt);
+            }
+        });
+
+        btnAddToQueue12.setBackground(new java.awt.Color(0, 153, 255));
+        btnAddToQueue12.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnAddToQueue12.setForeground(new java.awt.Color(255, 255, 255));
+        btnAddToQueue12.setText("Change Username");
+        btnAddToQueue12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddToQueue12ActionPerformed(evt);
+            }
+        });
+
         jLabel26.setFont(new java.awt.Font("Segoe UI Emoji", 2, 14)); // NOI18N
         jLabel26.setForeground(new java.awt.Color(0, 0, 0));
         jLabel26.setText("Username: (10-30 characters)");
@@ -483,29 +558,9 @@ public class AdminDashboard extends javax.swing.JFrame {
             }
         });
 
-        btnAddToQueue9.setBackground(javax.swing.UIManager.getDefaults().getColor("Component.custom.borderColor"));
-        btnAddToQueue9.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnAddToQueue9.setForeground(new java.awt.Color(255, 255, 255));
-        btnAddToQueue9.setText("Change Password");
-        btnAddToQueue9.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddToQueue9ActionPerformed(evt);
-            }
-        });
-
         jLabel31.setFont(new java.awt.Font("Segoe UI Emoji", 2, 14)); // NOI18N
         jLabel31.setForeground(new java.awt.Color(0, 0, 0));
         jLabel31.setText("Confirm Password:");
-
-        btnAddToQueue12.setBackground(javax.swing.UIManager.getDefaults().getColor("Actions.Blue"));
-        btnAddToQueue12.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnAddToQueue12.setForeground(new java.awt.Color(255, 255, 255));
-        btnAddToQueue12.setText("Change Username");
-        btnAddToQueue12.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddToQueue12ActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout jPanel15Layout = new javax.swing.GroupLayout(jPanel15);
         jPanel15.setLayout(jPanel15Layout);
@@ -579,10 +634,6 @@ public class AdminDashboard extends javax.swing.JFrame {
         jLabel25.setForeground(new java.awt.Color(0, 0, 0));
         jLabel25.setText("Existing accounts:");
 
-        btnRefreshQueue7.setBackground(java.awt.SystemColor.controlDkShadow);
-        btnRefreshQueue7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnRefreshQueue7.setText("Refresh");
-
         btnAddToQueue10.setBackground(javax.swing.UIManager.getDefaults().getColor("Actions.Blue"));
         btnAddToQueue10.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnAddToQueue10.setText("Show Locked Accounts");
@@ -591,6 +642,10 @@ public class AdminDashboard extends javax.swing.JFrame {
                 btnAddToQueue10ActionPerformed(evt);
             }
         });
+
+        btnRefreshQueue7.setBackground(java.awt.SystemColor.controlDkShadow);
+        btnRefreshQueue7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnRefreshQueue7.setText("Refresh");
 
         javax.swing.GroupLayout pnlAccountsLayout = new javax.swing.GroupLayout(pnlAccounts);
         pnlAccounts.setLayout(pnlAccountsLayout);
@@ -1501,7 +1556,7 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLogoutActionPerformed
 
     private void btnDriversActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDriversActionPerformed
-        // TODO add your handling code here:
+        showPanel("DRIVER");
     }//GEN-LAST:event_btnDriversActionPerformed
 
     private void btnAddToQueue4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddToQueue4ActionPerformed
@@ -1535,6 +1590,30 @@ public class AdminDashboard extends javax.swing.JFrame {
     private void btnAddToQueue12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddToQueue12ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnAddToQueue12ActionPerformed
+
+    private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
+        showPanel("HOME"); // Show the Home card
+    }//GEN-LAST:event_btnHomeActionPerformed
+
+    private void btnQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQueueActionPerformed
+        showPanel("QUEUE");
+    }//GEN-LAST:event_btnQueueActionPerformed
+
+    private void btnJeepneysActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJeepneysActionPerformed
+        showPanel("JEEPNEY");
+    }//GEN-LAST:event_btnJeepneysActionPerformed
+
+    private void btnTripHistoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTripHistoryActionPerformed
+        showPanel("TRIPHISTORY");
+    }//GEN-LAST:event_btnTripHistoryActionPerformed
+
+    private void btnAccountsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAccountsActionPerformed
+        showPanel("ACCOUNTS");
+    }//GEN-LAST:event_btnAccountsActionPerformed
+
+    private void btnReportsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReportsActionPerformed
+        showPanel("REPORTS");
+    }//GEN-LAST:event_btnReportsActionPerformed
 
     /**
      * @param args the command line arguments
