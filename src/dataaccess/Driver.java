@@ -5,7 +5,7 @@
 package dataaccess;
 
 import Konnectionz.DBConnection;
-import model.Driver;
+import model.Drivers;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,7 +23,7 @@ public class Driver {
      * Inserts a new driver record into the database.
      * Returns true if the insert was successful, otherwise false.
      */
-    public boolean insertDriver(Driver driver) {
+    public boolean insertDriver(Drivers driver) {
         String sql = "INSERT INTO drivers (driver_name, license_no, contact_no, status) "
                    + "VALUES (?, ?, ?, ?)";
 
@@ -48,7 +48,7 @@ public class Driver {
      * Updates an existing driver record using driver_id.
      * driver_id is important because it tells the database exactly which row to edit.
      */
-    public boolean updateDriver(Driver driver) {
+    public boolean updateDriver(Drivers driver) {
         String sql = "UPDATE drivers "
                    + "SET driver_name = ?, license_no = ?, contact_no = ?, status = ? "
                    + "WHERE driver_id = ?";
@@ -94,8 +94,8 @@ public class Driver {
      * Retrieves all driver records from the database.
      * This is used to fill the JTable.
      */
-    public List<Driver> getAllDrivers() {
-        List<Driver> drivers = new ArrayList<>();
+    public List<Drivers> getAllDrivers() {
+        List<Drivers> drivers = new ArrayList<>();
         String sql = "SELECT * FROM drivers ORDER BY driver_name ASC";
 
         try (Connection conn = DBConnection.getConnection();
@@ -103,7 +103,7 @@ public class Driver {
              ResultSet rs = pst.executeQuery()) {
 
             while (rs.next()) {
-                Driver driver = new Driver();
+                Drivers driver = new Drivers();
                 driver.setDriverId(rs.getInt("driver_id"));
                 driver.setDriverName(rs.getString("driver_name"));
                 driver.setLicenseNo(rs.getString("license_no"));
@@ -124,8 +124,8 @@ public class Driver {
      * Searches drivers by name, license number, or contact number.
      * This is useful for the search bar in the DriverForm.
      */
-    public List<Driver> searchDrivers(String keyword) {
-        List<Driver> drivers = new ArrayList<>();
+    public List<Drivers> searchDrivers(String keyword) {
+        List<Drivers> drivers = new ArrayList<>();
         String sql = "SELECT * FROM drivers "
                    + "WHERE driver_name LIKE ? "
                    + "OR license_no LIKE ? "
@@ -144,7 +144,7 @@ public class Driver {
 
             try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
-                    Driver driver = new Driver();
+                    Drivers driver = new Drivers();
                     driver.setDriverId(rs.getInt("driver_id"));
                     driver.setDriverName(rs.getString("driver_name"));
                     driver.setLicenseNo(rs.getString("license_no"));
@@ -166,7 +166,7 @@ public class Driver {
      * Gets a single driver by ID.
      * This is useful if you want to load one record for editing.
      */
-    public Driver getDriverById(int driverId) {
+    public Drivers getDriverById(int driverId) {
         String sql = "SELECT * FROM drivers WHERE driver_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
@@ -176,7 +176,7 @@ public class Driver {
 
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
-                    Driver driver = new Driver();
+                    Drivers driver = new Drivers();
                     driver.setDriverId(rs.getInt("driver_id"));
                     driver.setDriverName(rs.getString("driver_name"));
                     driver.setLicenseNo(rs.getString("license_no"));

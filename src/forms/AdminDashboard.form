@@ -1136,9 +1136,9 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="1" attributes="0">
                                   <Component id="jPanel9" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
                                   <Component id="jPanel11" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="1" attributes="0">
                                   <Component id="lblJeepneyTitle1" min="-2" max="-2" attributes="0"/>
@@ -1275,9 +1275,9 @@
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="jLabel14" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="btnAddToQueue2" min="-2" max="-2" attributes="0"/>
+                                          <Component id="btnAdd" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="btnRefreshQueue3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="btnClear" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                                   <EmptySpace max="32767" attributes="0"/>
@@ -1291,8 +1291,8 @@
                                   <Component id="jLabel14" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="btnAddToQueue2" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="btnRefreshQueue3" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="btnAdd" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="btnClear" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="32767" attributes="0"/>
                               </Group>
@@ -1311,7 +1311,7 @@
                             <Property name="text" type="java.lang.String" value="Confirmation of Details:"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JButton" name="btnAddToQueue2">
+                        <Component class="javax.swing.JButton" name="btnAdd">
                           <Properties>
                             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                               <Color blue="99" green="99" red="0" type="rgb"/>
@@ -1321,8 +1321,11 @@
                             </Property>
                             <Property name="text" type="java.lang.String" value="Add"/>
                           </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAddActionPerformed"/>
+                          </Events>
                         </Component>
-                        <Component class="javax.swing.JButton" name="btnRefreshQueue3">
+                        <Component class="javax.swing.JButton" name="btnClear">
                           <Properties>
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                               <Font name="Segoe UI" size="12" style="1"/>
@@ -1330,7 +1333,7 @@
                             <Property name="text" type="java.lang.String" value="Clear"/>
                           </Properties>
                           <Events>
-                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnRefreshQueue3ActionPerformed"/>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnClearActionPerformed"/>
                           </Events>
                         </Component>
                       </SubComponents>
@@ -1373,9 +1376,9 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="btnDispatch3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="btnUpdate" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="btnUndoDispatch3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="btnDelete" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <Component id="jLabel33" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
@@ -1390,8 +1393,8 @@
                                   <Component id="jLabel33" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace pref="12" max="32767" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="btnDispatch3" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="btnUndoDispatch3" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="btnUpdate" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="btnDelete" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
@@ -1399,7 +1402,7 @@
                         </DimensionLayout>
                       </Layout>
                       <SubComponents>
-                        <Component class="javax.swing.JButton" name="btnDispatch3">
+                        <Component class="javax.swing.JButton" name="btnUpdate">
                           <Properties>
                             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                               <Color blue="0" green="cc" red="ff" type="rgb"/>
@@ -1409,8 +1412,11 @@
                             </Property>
                             <Property name="text" type="java.lang.String" value="Update"/>
                           </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnUpdateActionPerformed"/>
+                          </Events>
                         </Component>
-                        <Component class="javax.swing.JButton" name="btnUndoDispatch3">
+                        <Component class="javax.swing.JButton" name="btnDelete">
                           <Properties>
                             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                               <Color blue="0" green="33" red="cc" type="rgb"/>
@@ -1420,6 +1426,9 @@
                             </Property>
                             <Property name="text" type="java.lang.String" value="Delete"/>
                           </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDeleteActionPerformed"/>
+                          </Events>
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel33">
                           <Properties>
@@ -1460,22 +1469,26 @@
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane4" min="-2" pref="472" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="16" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
-                                      <Component id="jPanel12" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
+                                              <Component id="jPanel12" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+                                              <Component id="jLabel15" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
-                                      <Component id="jLabel15" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="jScrollPane4" pref="482" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -1504,8 +1517,12 @@
                         <Component class="javax.swing.JTable" name="tblDrivers">
                           <Properties>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="1" rowCount="4">
-                                <Column editable="true" title="Drivers" type="java.lang.Object"/>
+                              <Table columnCount="5" rowCount="6">
+                                <Column editable="true" title="Driver&apos;s ID" type="java.lang.Object"/>
+                                <Column editable="true" title="Driver&apos;s Name" type="java.lang.Object"/>
+                                <Column editable="true" title="License No." type="java.lang.Object"/>
+                                <Column editable="true" title="Contact No." type="java.lang.Object"/>
+                                <Column editable="true" title="Status" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -1546,9 +1563,9 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="jComboBox5" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="btnUndoDispatch4" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btnSearch" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="btnRefreshQueue4" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btnRefresh" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="32767" attributes="0"/>
                               </Group>
                           </Group>
@@ -1559,8 +1576,8 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
                                       <Component id="jComboBox5" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="btnUndoDispatch4" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
-                                      <Component id="btnRefreshQueue4" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
+                                      <Component id="btnSearch" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
+                                      <Component id="btnRefresh" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="32767" attributes="0"/>
                               </Group>
@@ -1581,7 +1598,7 @@
                             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
                           </AuxValues>
                         </Component>
-                        <Component class="javax.swing.JButton" name="btnUndoDispatch4">
+                        <Component class="javax.swing.JButton" name="btnSearch">
                           <Properties>
                             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                               <Color blue="21" green="64" red="d5" type="rgb"/>
@@ -1589,10 +1606,13 @@
                             <Property name="text" type="java.lang.String" value="Search"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JButton" name="btnRefreshQueue4">
+                        <Component class="javax.swing.JButton" name="btnRefresh">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Refresh"/>
                           </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnRefreshActionPerformed"/>
+                          </Events>
                         </Component>
                       </SubComponents>
                     </Container>

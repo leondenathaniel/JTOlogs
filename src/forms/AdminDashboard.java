@@ -1,6 +1,11 @@
 package forms;
 
 import java.awt.CardLayout;
+import dataaccess.Driver;
+import model.Drivers;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -13,12 +18,20 @@ import java.awt.CardLayout;
  */
 public class AdminDashboard extends javax.swing.JFrame {
 
+    // Holds the currently selected driver ID from the table
+    // This is important for update and delete operations.
+    private int selectedDriverId = -1;
+    
     /**
      * Creates new form Dashboard
      */
     public AdminDashboard() {
         initComponents();
-
+        loadDrivers();      // Load all driver records into the table on startup
+        clearFields();      // Start with clean inputs
+        
+        
+        
     // Add the panels to the CardLayout using card names
     pnlContent.add(pnlHome, "HOME");
     pnlContent.add(pnlQueue, "QUEUE");
@@ -32,7 +45,195 @@ public class AdminDashboard extends javax.swing.JFrame {
     showPanel("HOME");
 
     }
+    
+    private Drivers getDriverFromForm() {
+        Drivers driver = new Drivers(); // Create a blank Driver object
 
+        // If a row is selected, keep its ID.
+        // If not selected yet, this stays -1 until a row click happens.
+        driver.setDriverId(selectedDriverId);
+
+        // Read values from the form and trim extra spaces
+        driver.setDriverName(txtDriverName.getText().trim());
+        driver.setLicenseNo(txtLicenseNo.getText().trim());
+        driver.setContactNo(txtContactNo.getText().trim());
+        driver.setStatus(cmbStatus.getSelectedItem().toString());
+
+        return driver; // Return the completed model object
+    }
+    
+    /**
+     * Loads all drivers from the database into the JTable.
+     * This is called on startup and after add/update/delete operations.
+     */
+    private void loadDrivers() {
+        Driver dao = new Driver(); // Create DAO object to talk to the database
+        List<Drivers> drivers = dao.getAllDrivers(); // Fetch all driver records
+
+        // Get the table model used by the JTable
+        DefaultTableModel model = (DefaultTableModel) tblDrivers.getModel();
+
+        // Clear old rows before loading fresh data
+        model.setRowCount(0);
+
+        // Loop through each driver and add it to the table
+        for (Drivers d : drivers) {
+            Object[] row = {
+                d.getDriverId(),
+                d.getDriverName(),
+                d.getLicenseNo(),
+                d.getContactNo(),
+                d.getStatus()
+            };
+
+            model.addRow(row); // Add one row at a time
+        }
+    }
+    
+    /**
+     * Clears all input fields so the form is ready for a new action.
+     */
+    private void clearFields() {
+        txtDriverId.setText("");         // Clear ID field
+        txtDriverName.setText("");       // Clear name field
+        txtLicenseNo.setText("");        // Clear license field
+        txtContactNo.setText("");        // Clear contact field
+        cmbStatus.setSelectedIndex(0);   // Reset status dropdown
+
+        // Reset selected ID so update/delete won't act on an old record
+        selectedDriverId = -1;
+    }
+    
+    /**
+     * Validates the required fields before saving.
+     * Returns true if the input is valid, otherwise false.
+     */
+    private boolean validateDriverForm() {
+        String name = txtDriverName.getText().trim();
+        String licenseNo = txtLicenseNo.getText().trim();
+
+        if (name.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Driver name is required.");
+            txtDriverName.requestFocus();
+            return false;
+        }
+
+        if (licenseNo.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "License number is required.");
+            txtLicenseNo.requestFocus();
+            return false;
+        }
+
+        return true;
+    }
+    
+    /**
+     * Adds a new driver record to the database.
+     */
+    private void addDriver() {
+        // Check input first
+        if (!validateDriverForm()) {
+            return; // Stop here if validation fails
+        }
+
+        // Build the Driver object from the form
+        Drivers driver = getDriverFromForm();
+
+        // Send it to the DAO for saving
+        Driver dao = new Driver();
+        boolean success = dao.insertDriver(driver);
+
+        if (success) {
+            JOptionPane.showMessageDialog(this, "Driver added successfully.");
+            loadDrivers();   // Refresh table so new record appears
+            clearFields();   // Reset form for the next entry
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to add driver.");
+        }
+    }
+
+    /**
+     * Updates the selected driver record in the database.
+     */
+    private void updateDriver() {
+        // Make sure the user clicked a row first
+        if (selectedDriverId == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a driver to update.");
+            return;
+        }
+
+        // Validate input before updating
+        if (!validateDriverForm()) {
+            return;
+        }
+
+        // Build Driver object using the selected ID
+        Drivers driver = getDriverFromForm();
+
+        // Update through DAO
+        Driver dao = new Driver();
+        boolean success = dao.updateDriver(driver);
+
+        if (success) {
+            JOptionPane.showMessageDialog(this, "Driver updated successfully.");
+            loadDrivers();   // Reload table to show changes
+            clearFields();   // Reset form
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to update driver.");
+        }
+    }
+    
+    /**
+     * Deletes the selected driver record from the database.
+     */
+    private void deleteDriver() {
+        // Make sure a row was selected
+        if (selectedDriverId == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a driver to delete.");
+            return;
+        }
+
+        // Ask for confirmation first
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to delete this driver?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm != JOptionPane.YES_OPTION) {
+            return; // Stop if user clicked No
+        }
+
+        Driver dao = new Driver();
+        boolean success = dao.deleteDriver(selectedDriverId);
+
+        if (success) {
+            JOptionPane.showMessageDialog(this, "Driver deleted successfully.");
+            loadDrivers();   // Refresh the table
+            clearFields();   // Reset form
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to delete driver.");
+        }
+    }
+    
+    /**
+     * Gets the selected row from the JTable and puts the values into the form fields.
+     * This is how the user edits or deletes an existing record.
+     */
+    private void tblDriversMouseClicked(java.awt.event.MouseEvent evt) {
+        int row = tblDrivers.getSelectedRow(); // Get clicked row index
+
+        if (row != -1) {
+            // Read the row values from the table
+            selectedDriverId = Integer.parseInt(tblDrivers.getValueAt(row, 0).toString());
+            txtDriverId.setText(String.valueOf(selectedDriverId));
+            txtDriverName.setText(tblDrivers.getValueAt(row, 1).toString());
+            txtLicenseNo.setText(tblDrivers.getValueAt(row, 2).toString());
+            txtContactNo.setText(tblDrivers.getValueAt(row, 3).toString());
+            cmbStatus.setSelectedItem(tblDrivers.getValueAt(row, 4).toString());
+        }
+    }
     
     
     public void setUser(String username, String role) {
@@ -43,6 +244,8 @@ public class AdminDashboard extends javax.swing.JFrame {
     CardLayout card = (CardLayout) pnlContent.getLayout(); // Get the CardLayout from the center panel
     card.show(pnlContent, panelName); // Show the panel whose name matches panelName
     }
+    
+    
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -121,16 +324,16 @@ public class AdminDashboard extends javax.swing.JFrame {
         jLabel12 = new javax.swing.JLabel();
         jPanel10 = new javax.swing.JPanel();
         jLabel14 = new javax.swing.JLabel();
-        btnAddToQueue2 = new javax.swing.JButton();
-        btnRefreshQueue3 = new javax.swing.JButton();
+        btnAdd = new javax.swing.JButton();
+        btnClear = new javax.swing.JButton();
         txtContactNo = new javax.swing.JTextField();
         txtDriverName = new javax.swing.JTextField();
         jLabel21 = new javax.swing.JLabel();
         txtLicenseNo = new javax.swing.JTextField();
         jLabel32 = new javax.swing.JLabel();
         jPanel13 = new javax.swing.JPanel();
-        btnDispatch3 = new javax.swing.JButton();
-        btnUndoDispatch3 = new javax.swing.JButton();
+        btnUpdate = new javax.swing.JButton();
+        btnDelete = new javax.swing.JButton();
         jLabel33 = new javax.swing.JLabel();
         jLabel13 = new javax.swing.JLabel();
         cmbStatus = new javax.swing.JComboBox<>();
@@ -139,8 +342,8 @@ public class AdminDashboard extends javax.swing.JFrame {
         tblDrivers = new javax.swing.JTable();
         jPanel12 = new javax.swing.JPanel();
         jComboBox5 = new javax.swing.JComboBox<>();
-        btnUndoDispatch4 = new javax.swing.JButton();
-        btnRefreshQueue4 = new javax.swing.JButton();
+        btnSearch = new javax.swing.JButton();
+        btnRefresh = new javax.swing.JButton();
         jLabel15 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
@@ -825,15 +1028,20 @@ public class AdminDashboard extends javax.swing.JFrame {
         jLabel14.setForeground(new java.awt.Color(0, 0, 0));
         jLabel14.setText("Confirmation of Details:");
 
-        btnAddToQueue2.setBackground(new java.awt.Color(0, 153, 153));
-        btnAddToQueue2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnAddToQueue2.setText("Add");
-
-        btnRefreshQueue3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnRefreshQueue3.setText("Clear");
-        btnRefreshQueue3.addActionListener(new java.awt.event.ActionListener() {
+        btnAdd.setBackground(new java.awt.Color(0, 153, 153));
+        btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnAdd.setText("Add");
+        btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnRefreshQueue3ActionPerformed(evt);
+                btnAddActionPerformed(evt);
+            }
+        });
+
+        btnClear.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnClear.setText("Clear");
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
             }
         });
 
@@ -846,9 +1054,9 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel14)
                     .addGroup(jPanel10Layout.createSequentialGroup()
-                        .addComponent(btnAddToQueue2)
+                        .addComponent(btnAdd)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnRefreshQueue3)))
+                        .addComponent(btnClear)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel10Layout.setVerticalGroup(
@@ -858,8 +1066,8 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addComponent(jLabel14)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnAddToQueue2)
-                    .addComponent(btnRefreshQueue3))
+                    .addComponent(btnAdd)
+                    .addComponent(btnClear))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -871,13 +1079,23 @@ public class AdminDashboard extends javax.swing.JFrame {
         jPanel13.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
         jPanel13.setForeground(new java.awt.Color(204, 204, 204));
 
-        btnDispatch3.setBackground(new java.awt.Color(255, 204, 0));
-        btnDispatch3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnDispatch3.setText("Update");
+        btnUpdate.setBackground(new java.awt.Color(255, 204, 0));
+        btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnUpdate.setText("Update");
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
 
-        btnUndoDispatch3.setBackground(new java.awt.Color(204, 51, 0));
-        btnUndoDispatch3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnUndoDispatch3.setText("Delete");
+        btnDelete.setBackground(new java.awt.Color(204, 51, 0));
+        btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnDelete.setText("Delete");
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
 
         jLabel33.setFont(new java.awt.Font("Rockwell", 1, 12)); // NOI18N
         jLabel33.setForeground(new java.awt.Color(204, 0, 0));
@@ -891,9 +1109,9 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel13Layout.createSequentialGroup()
-                        .addComponent(btnDispatch3)
+                        .addComponent(btnUpdate)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnUndoDispatch3))
+                        .addComponent(btnDelete))
                     .addComponent(jLabel33))
                 .addContainerGap(27, Short.MAX_VALUE))
         );
@@ -904,8 +1122,8 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addComponent(jLabel33)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnDispatch3)
-                    .addComponent(btnUndoDispatch3))
+                    .addComponent(btnUpdate)
+                    .addComponent(btnDelete))
                 .addContainerGap())
         );
 
@@ -973,13 +1191,15 @@ public class AdminDashboard extends javax.swing.JFrame {
 
         tblDrivers.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null},
-                {null},
-                {null},
-                {null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Drivers"
+                "Driver's ID", "Driver's Name", "License No.", "Contact No.", "Status"
             }
         ));
         jScrollPane4.setViewportView(tblDrivers);
@@ -990,10 +1210,15 @@ public class AdminDashboard extends javax.swing.JFrame {
 
         jComboBox5.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sort by Name (A-Z)", "Sort by Name (Z-A)" }));
 
-        btnUndoDispatch4.setBackground(new java.awt.Color(213, 100, 33));
-        btnUndoDispatch4.setText("Search");
+        btnSearch.setBackground(new java.awt.Color(213, 100, 33));
+        btnSearch.setText("Search");
 
-        btnRefreshQueue4.setText("Refresh");
+        btnRefresh.setText("Refresh");
+        btnRefresh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRefreshActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
         jPanel12.setLayout(jPanel12Layout);
@@ -1003,9 +1228,9 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jComboBox5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnUndoDispatch4)
+                .addComponent(btnSearch)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnRefreshQueue4)
+                .addComponent(btnRefresh)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel12Layout.setVerticalGroup(
@@ -1014,8 +1239,8 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jComboBox5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnUndoDispatch4, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnRefreshQueue4, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1029,18 +1254,20 @@ public class AdminDashboard extends javax.swing.JFrame {
         jPanel11Layout.setHorizontalGroup(
             jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel11Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 472, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 16, Short.MAX_VALUE))
-            .addGroup(jPanel11Layout.createSequentialGroup()
                 .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel11Layout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel11Layout.createSequentialGroup()
+                                .addGap(17, 17, 17)
+                                .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel11Layout.createSequentialGroup()
+                                .addGap(25, 25, 25)
+                                .addComponent(jLabel15)))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanel11Layout.createSequentialGroup()
-                        .addGap(25, 25, 25)
-                        .addComponent(jLabel15)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap()
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel11Layout.setVerticalGroup(
             jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1081,9 +1308,9 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addGroup(pnlDriversLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlDriversLayout.createSequentialGroup()
                         .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(15, 15, 15))
+                        .addGap(27, 27, 27))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlDriversLayout.createSequentialGroup()
                         .addComponent(lblJeepneyTitle1)
                         .addGap(352, 352, 352))))
@@ -1649,9 +1876,26 @@ public class AdminDashboard extends javax.swing.JFrame {
         showPanel("REPORTS");
     }//GEN-LAST:event_btnReportsActionPerformed
 
-    private void btnRefreshQueue3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshQueue3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnRefreshQueue3ActionPerformed
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        clearFields();
+    }//GEN-LAST:event_btnClearActionPerformed
+
+    private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
+        addDriver();
+    }//GEN-LAST:event_btnAddActionPerformed
+
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        updateDriver();
+    }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        deleteDriver();
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
+    private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
+        loadDrivers();   // Reload everything from database
+        clearFields();   // Reset form
+    }//GEN-LAST:event_btnRefreshActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1691,42 +1935,42 @@ public class AdminDashboard extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAccounts;
+    private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnAddToQueue;
     private javax.swing.JButton btnAddToQueue1;
     private javax.swing.JButton btnAddToQueue10;
     private javax.swing.JButton btnAddToQueue11;
     private javax.swing.JButton btnAddToQueue12;
-    private javax.swing.JButton btnAddToQueue2;
     private javax.swing.JButton btnAddToQueue4;
     private javax.swing.JButton btnAddToQueue5;
     private javax.swing.JButton btnAddToQueue6;
     private javax.swing.JButton btnAddToQueue7;
     private javax.swing.JButton btnAddToQueue8;
     private javax.swing.JButton btnAddToQueue9;
+    private javax.swing.JButton btnClear;
+    private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnDispatch;
     private javax.swing.JButton btnDispatch1;
     private javax.swing.JButton btnDispatch2;
-    private javax.swing.JButton btnDispatch3;
     private javax.swing.JButton btnDispatch5;
     private javax.swing.JButton btnDrivers;
     private javax.swing.JButton btnHome;
     private javax.swing.JButton btnJeepneys;
     private javax.swing.JButton btnLogout;
     private javax.swing.JButton btnQueue;
+    private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnRefreshQueue;
     private javax.swing.JButton btnRefreshQueue1;
     private javax.swing.JButton btnRefreshQueue2;
-    private javax.swing.JButton btnRefreshQueue3;
-    private javax.swing.JButton btnRefreshQueue4;
     private javax.swing.JButton btnRefreshQueue6;
     private javax.swing.JButton btnRefreshQueue7;
     private javax.swing.JButton btnReports;
+    private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnTripHistory;
     private javax.swing.JButton btnUndoDispatch;
     private javax.swing.JButton btnUndoDispatch1;
     private javax.swing.JButton btnUndoDispatch2;
-    private javax.swing.JButton btnUndoDispatch3;
-    private javax.swing.JButton btnUndoDispatch4;
+    private javax.swing.JButton btnUpdate;
     private javax.swing.JComboBox<String> cmbJeepneySelect;
     private javax.swing.JComboBox<String> cmbJeepneySelect2;
     private javax.swing.JComboBox<String> cmbJeepneySelect3;
