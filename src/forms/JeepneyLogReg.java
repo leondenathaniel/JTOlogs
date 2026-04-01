@@ -5,6 +5,8 @@
 package forms;
 
 import dataaccess.User;
+import forms.AdminDashboard;
+import forms.StaffDashboard;
 import javax.swing.JOptionPane;
 /**
  *
@@ -36,7 +38,7 @@ public class JeepneyLogReg extends javax.swing.JFrame {
         btnLogin = new javax.swing.JButton();
         jtfUsername = new javax.swing.JTextField();
         lblLogo = new javax.swing.JLabel();
-        jcbRoles = new javax.swing.JComboBox<>();
+        cmbLoginAs = new javax.swing.JComboBox<>();
         lblSubtitle = new javax.swing.JLabel();
         jpfPassword = new javax.swing.JPasswordField();
 
@@ -80,8 +82,8 @@ public class JeepneyLogReg extends javax.swing.JFrame {
         lblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/logo-new.png"))); // NOI18N
         jPanel1.add(lblLogo, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 30, 220, 190));
 
-        jcbRoles.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Admin", "Staff" }));
-        jPanel1.add(jcbRoles, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 430, 110, 40));
+        cmbLoginAs.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Admin", "Staff" }));
+        jPanel1.add(cmbLoginAs, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 430, 110, 40));
 
         lblSubtitle.setFont(new java.awt.Font("Segoe UI Semibold", 2, 14)); // NOI18N
         lblSubtitle.setForeground(new java.awt.Color(153, 153, 153));
@@ -98,11 +100,12 @@ public class JeepneyLogReg extends javax.swing.JFrame {
         
     String username = jtfUsername.getText();
     String password = new String(jpfPassword.getPassword());
+    String selectedRole = cmbLoginAs.getSelectedItem().toString();
 
 
-    if (username.isEmpty() || password.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Please fill in all fields.");
-        return;
+    if (username.isEmpty() || password.isEmpty() || selectedRole.isEmpty()) {
+    JOptionPane.showMessageDialog(this, "Please fill in all fields.");
+    return;
     }
 
     User dao = new User();
@@ -110,24 +113,31 @@ public class JeepneyLogReg extends javax.swing.JFrame {
 
     if (role != null) {
 
+        if (selectedRole.equalsIgnoreCase(role)) {
 
-        JOptionPane.showMessageDialog(this, "Login successful!");
+            JOptionPane.showMessageDialog(this, "Login successful!");
 
+            // Open the correct dashboard based on the database role
+            if (role.equalsIgnoreCase("admin")) {
+                AdminDashboard adminDashboard = new AdminDashboard();
+                adminDashboard.setVisible(true);
+            } else if (role.equalsIgnoreCase("staff")) {
+                StaffDashboard staffDashboard = new StaffDashboard();
+                staffDashboard.setVisible(true);
+            }
 
-        AdminDashboard dashboard = new AdminDashboard();
+            // Close the login form after successful login
+            this.dispose();
 
-
-        dashboard.setUser(username, role);
-
-        dashboard.setVisible(true);
-
-
-        this.dispose();
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Role mismatch. Selected role does not match your account.");
+        }
 
     } else {
-
+        // Username or password is incorrect
         JOptionPane.showMessageDialog(this, "Invalid username or password.");
-    }
+}
     }//GEN-LAST:event_btnLoginActionPerformed
 
     /**
@@ -167,8 +177,8 @@ public class JeepneyLogReg extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnLogin;
+    private javax.swing.JComboBox<String> cmbLoginAs;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JComboBox<String> jcbRoles;
     private javax.swing.JPasswordField jpfPassword;
     private javax.swing.JTextField jtfUsername;
     private javax.swing.JLabel lblLogo;
