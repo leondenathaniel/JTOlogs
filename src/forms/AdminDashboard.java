@@ -32,6 +32,8 @@ public class AdminDashboard extends javax.swing.JFrame {
         
         
         
+        
+        
     // Add the panels to the CardLayout using card names
     pnlContent.add(pnlHome, "HOME");
     pnlContent.add(pnlQueue, "QUEUE");
@@ -46,64 +48,66 @@ public class AdminDashboard extends javax.swing.JFrame {
 
     }
     
+    private void hideDriverIdColumn() {
+        tblDrivers.getColumnModel().getColumn(0).setMinWidth(0);
+        tblDrivers.getColumnModel().getColumn(0).setMaxWidth(0);
+        tblDrivers.getColumnModel().getColumn(0).setWidth(0);
+    }
+    
+    /*
+    ========================= CONTAINMENT RELATED: DRIVERS PANEL =============================================
+    */
+    
+    
+    
+    /*
+    END OF CONTAINMENT: DRIVERS PANEL
+    */
+    
     private Drivers getDriverFromForm() {
-        Drivers driver = new Drivers(); // Create a blank Driver object
-
-        // If a row is selected, keep its ID.
-        // If not selected yet, this stays -1 until a row click happens.
+        Drivers driver = new Drivers();
         driver.setDriverId(selectedDriverId);
-
-        // Read values from the form and trim extra spaces
         driver.setDriverName(txtDriverName.getText().trim());
         driver.setLicenseNo(txtLicenseNo.getText().trim());
         driver.setContactNo(txtContactNo.getText().trim());
         driver.setStatus(cmbStatus.getSelectedItem().toString());
 
-        return driver; // Return the completed model object
+        return driver;
     }
     
     /**
      * Loads all drivers from the database into the JTable.
      * This is called on startup and after add/update/delete operations.
      */
-    private void loadDrivers() {
-        DriverDAO dao = new DriverDAO(); // Create DAO object to talk to the database
-        List<Drivers> drivers = dao.getAllDrivers(); // Fetch all driver records
-        loadDriversToTable(drivers);
-        
-        // Get the table model used by the JTable
-        DefaultTableModel model = (DefaultTableModel) tblDrivers.getModel();
-            
-
-        // Clear old rows before loading fresh data
-        model.setRowCount(0);
-
-        // Loop through each driver and add it to the table
-        for (Drivers d : drivers) {
-            Object[] row = {
-                d.getDriverId(),
-                d.getDriverName(),
-                d.getLicenseNo(),
-                d.getContactNo(),
-                d.getStatus()
-            };
-
-            model.addRow(row); // Add one row at a time
-        }
-    }
+//    private void loadDrivers() {
+//        DriverDAO dao = new DriverDAO();
+//        List<Drivers> drivers = dao.getAllDrivers();
+//
+//        DefaultTableModel model = (DefaultTableModel) tblDrivers.getModel();
+//        model.setRowCount(0);
+//
+//        for (Drivers d : drivers) {
+//            Object[] row = {
+//                d.getDisplayId(),
+//                d.getDriverName(),
+//                d.getLicenseNo(),
+//                d.getContactNo(),
+//                d.getStatus()
+//            };
+//            model.addRow(row);
+//        }
+//    }
     
     /**
      * Clears all input fields so the form is ready for a new action.
      */
     private void clearFields() {
-        //txtDriverId.setText("");         // Clear ID field
-        txtDriverName.setText("");       // Clear name field
-        txtLicenseNo.setText("");        // Clear license field
-        txtContactNo.setText("");        // Clear contact field
-        cmbStatus.setSelectedIndex(0);   // Reset status dropdown
-
-        // Reset selected ID so update/delete won't act on an old record
+        txtDriverName.setText("");
+        txtLicenseNo.setText("");
+        txtContactNo.setText("");
+        cmbStatus.setSelectedIndex(0);
         selectedDriverId = -1;
+        tblDrivers.clearSelection();
     }
     
     /**
@@ -245,7 +249,7 @@ public class AdminDashboard extends javax.swing.JFrame {
     // Loop through each Driver object and put it into the JTable
     for (Drivers d : drivers) {
         Object[] row = {
-            d.getDriverId(),
+            d.getDisplayId(),
             d.getDriverName(),
             d.getLicenseNo(),
             d.getContactNo(),
@@ -274,7 +278,25 @@ public class AdminDashboard extends javax.swing.JFrame {
     
     }
     
-    
+    private void loadDrivers() {
+    DriverDAO dao = new DriverDAO();
+    List<Drivers> drivers = dao.getAllDrivers();
+
+    DefaultTableModel model = (DefaultTableModel) tblDrivers.getModel();
+    model.setRowCount(0);
+
+    for (Drivers d : drivers) {
+        Object[] row = {
+            d.getDriverId(),     // hidden internal ID
+            d.getDisplayId(),    // visible professional ID
+            d.getDriverName(),
+            d.getLicenseNo(),
+            d.getContactNo(),
+            d.getStatus()
+        };
+        model.addRow(row);
+    }
+}
     
     
     /* 
@@ -1938,16 +1960,17 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_btnRefreshActionPerformed
 
     private void tblDriversMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblDriversMouseClicked
-        
-        int row = tblDrivers.getSelectedRow(); // Get clicked row index
+        int row = tblDrivers.getSelectedRow();
 
         if (row != -1) {
-            // Read the row values from the table
+            // ✅ ALWAYS get driver_id from hidden column 0
             selectedDriverId = Integer.parseInt(tblDrivers.getValueAt(row, 0).toString());
-            txtDriverName.setText(tblDrivers.getValueAt(row, 1).toString());
-            txtLicenseNo.setText(tblDrivers.getValueAt(row, 2).toString());
-            txtContactNo.setText(tblDrivers.getValueAt(row, 3).toString());
-            cmbStatus.setSelectedItem(tblDrivers.getValueAt(row, 4).toString());
+
+            // ✅ Use correct column indexes
+            txtDriverName.setText(tblDrivers.getValueAt(row, 2).toString());
+            txtLicenseNo.setText(tblDrivers.getValueAt(row, 3).toString());
+            txtContactNo.setText(tblDrivers.getValueAt(row, 4).toString());
+            cmbStatus.setSelectedItem(tblDrivers.getValueAt(row, 5).toString());
         }
     }//GEN-LAST:event_tblDriversMouseClicked
 

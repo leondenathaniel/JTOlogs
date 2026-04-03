@@ -19,29 +19,103 @@ import java.util.List;
  */
 public class DriverDAO {
 
+    
+     /*
+    ================================================================ CONTAINMENT: ALL DRIVERS TABLE ==========================================================================
+    */
+    
+    public String generateNextDriverDisplayId() {
+        String nextId = "DRV-0001";
+        String sql = "SELECT display_id " +
+                     "FROM drivers " +
+                     "WHERE display_id LIKE 'DRV-%' " +
+                     "ORDER BY CAST(SUBSTRING(display_id, 5) AS UNSIGNED) DESC " +
+                     "LIMIT 1";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                String lastId = rs.getString("display_id");
+                String numberPart = lastId.substring(4); // removes "DRV-"
+                int nextNumber = Integer.parseInt(numberPart) + 1;
+                nextId = String.format("DRV-%04d", nextNumber);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return nextId;
+    }
+    
+    
+        public List<Drivers> getAllDrivers() {
+        List<Drivers> drivers = new ArrayList<>();
+
+        String sql = "SELECT driver_id, display_id, driver_name, license_no, contact_no, status " +
+                     "FROM drivers " +
+                     "ORDER BY CAST(SUBSTRING(display_id, 5) AS UNSIGNED) ASC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+
+            while (rs.next()) {
+                Drivers driver = new Drivers();
+                driver.setDriverId(rs.getInt("driver_id"));
+                driver.setDisplayId(rs.getString("display_id"));
+                driver.setDriverName(rs.getString("driver_name"));
+                driver.setLicenseNo(rs.getString("license_no"));
+                driver.setContactNo(rs.getString("contact_no"));
+                driver.setStatus(rs.getString("status"));
+
+                drivers.add(driver);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return drivers;
+    }
+    
+    /* 
+    WITHIN THIS SECTION CONTAINS THE DRIVERS TABLE END_BORDER;=====================================
+    */
+    
+    
     /**
      * Inserts a new driver record into the database.
      * Returns true if the insert was successful, otherwise false.
      */
     public boolean insertDriver(Drivers driver) {
-        String sql = "INSERT INTO drivers (driver_name, license_no, contact_no, status) "
-                   + "VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO drivers (display_id, driver_name, license_no, contact_no, status) " +
+                     "VALUES (?, ?, ?, ?, ?)";
 
-        // try-with-resources automatically closes the connection and statement
+        String displayId = generateNextDriverDisplayId();
+
         try (Connection conn = DBConnection.getConnection();
-            PreparedStatement pst = conn.prepareStatement(sql)) {
+             PreparedStatement pst = conn.prepareStatement(sql)) {
 
-            pst.setString(1, driver.getDriverName()); // driver name from the form
-            pst.setString(2, driver.getLicenseNo());   // unique license number
-            pst.setString(3, driver.getContactNo());   // contact number
-            pst.setString(4, driver.getStatus());      // active or inactive
+            pst.setString(1, displayId);
+            pst.setString(2, driver.getDriverName());
+            pst.setString(3, driver.getLicenseNo());
+            pst.setString(4, driver.getContactNo());
+            pst.setString(5, driver.getStatus());
 
-            return pst.executeUpdate() > 0; // true if one row was inserted
+            int rows = pst.executeUpdate();
+            if (rows > 0) {
+                driver.setDisplayId(displayId);
+                return true;
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -49,9 +123,9 @@ public class DriverDAO {
      * driver_id is important because it tells the database exactly which row to edit.
      */
     public boolean updateDriver(Drivers driver) {
-        String sql = "UPDATE drivers "
-                   + "SET driver_name = ?, license_no = ?, contact_no = ?, status = ? "
-                   + "WHERE driver_id = ?";
+        String sql = "UPDATE drivers " +
+                     "SET driver_name = ?, license_no = ?, contact_no = ?, status = ? " +
+                     "WHERE driver_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -81,7 +155,6 @@ public class DriverDAO {
              PreparedStatement pst = conn.prepareStatement(sql)) {
 
             pst.setInt(1, driverId);
-
             return pst.executeUpdate() > 0;
 
         } catch (SQLException e) {
@@ -94,32 +167,8 @@ public class DriverDAO {
      * Retrieves all driver records from the database.
      * This is used to fill the JTable.
      */
-    public List<Drivers> getAllDrivers() {
-        List<Drivers> drivers = new ArrayList<>();
-        String sql = "SELECT * FROM drivers ORDER BY driver_name ASC";
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pst = conn.prepareStatement(sql);
-             ResultSet rs = pst.executeQuery()) {
-
-            while (rs.next()) {
-                Drivers driver = new Drivers();
-                driver.setDriverId(rs.getInt("driver_id"));
-                driver.setDriverName(rs.getString("driver_name"));
-                driver.setLicenseNo(rs.getString("license_no"));
-                driver.setContactNo(rs.getString("contact_no"));
-                driver.setStatus(rs.getString("status"));
-
-                drivers.add(driver); // add one driver object to the list
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return drivers;
-    }
-
+    
     /**
      * Searches drivers by name, license number, or contact number.
      * This is useful for the search bar in the DriverForm.
