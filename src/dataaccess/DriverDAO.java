@@ -17,7 +17,7 @@ import java.util.List;
  * DriverDAO handles all database operations for the drivers table.
  * This keeps SQL away from the GUI and makes the code easier to maintain.
  */
-public class Driver {
+public class DriverDAO {
 
     /**
      * Inserts a new driver record into the database.
@@ -193,4 +193,36 @@ public class Driver {
 
         return null;
     }
+    
+    public List<Drivers> getDriversSortedByName(boolean ascending) {
+    List<Drivers> drivers = new ArrayList<>();
+
+    // Choose ASC or DESC based on the selected sort option
+    String order = ascending ? "ASC" : "DESC";
+
+    // Sort by driver_name using SQL ORDER BY
+    String sql = "SELECT * FROM drivers ORDER BY driver_name " + order;
+
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement pst = conn.prepareStatement(sql);
+         ResultSet rs = pst.executeQuery()) {
+
+        while (rs.next()) {
+            Drivers driver = new Drivers();
+            driver.setDriverId(rs.getInt("driver_id"));
+            driver.setDriverName(rs.getString("driver_name"));
+            driver.setLicenseNo(rs.getString("license_no"));
+            driver.setContactNo(rs.getString("contact_no"));
+            driver.setStatus(rs.getString("status"));
+
+            drivers.add(driver); // Add each record to the list
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return drivers;
+    }
+    
 }

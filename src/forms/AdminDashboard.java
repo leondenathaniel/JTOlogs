@@ -1,7 +1,7 @@
 package forms;
 
 import java.awt.CardLayout;
-import dataaccess.Driver;
+import dataaccess.DriverDAO;
 import model.Drivers;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -67,11 +67,13 @@ public class AdminDashboard extends javax.swing.JFrame {
      * This is called on startup and after add/update/delete operations.
      */
     private void loadDrivers() {
-        Driver dao = new Driver(); // Create DAO object to talk to the database
+        DriverDAO dao = new DriverDAO(); // Create DAO object to talk to the database
         List<Drivers> drivers = dao.getAllDrivers(); // Fetch all driver records
-
+        loadDriversToTable(drivers);
+        
         // Get the table model used by the JTable
         DefaultTableModel model = (DefaultTableModel) tblDrivers.getModel();
+            
 
         // Clear old rows before loading fresh data
         model.setRowCount(0);
@@ -94,7 +96,7 @@ public class AdminDashboard extends javax.swing.JFrame {
      * Clears all input fields so the form is ready for a new action.
      */
     private void clearFields() {
-        txtDriverId.setText("");         // Clear ID field
+        //txtDriverId.setText("");         // Clear ID field
         txtDriverName.setText("");       // Clear name field
         txtLicenseNo.setText("");        // Clear license field
         txtContactNo.setText("");        // Clear contact field
@@ -140,7 +142,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         Drivers driver = getDriverFromForm();
 
         // Send it to the DAO for saving
-        Driver dao = new Driver();
+        DriverDAO dao = new DriverDAO();
         boolean success = dao.insertDriver(driver);
 
         if (success) {
@@ -171,7 +173,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         Drivers driver = getDriverFromForm();
 
         // Update through DAO
-        Driver dao = new Driver();
+        DriverDAO dao = new DriverDAO();
         boolean success = dao.updateDriver(driver);
 
         if (success) {
@@ -205,7 +207,7 @@ public class AdminDashboard extends javax.swing.JFrame {
             return; // Stop if user clicked No
         }
 
-        Driver dao = new Driver();
+        DriverDAO dao = new DriverDAO();
         boolean success = dao.deleteDriver(selectedDriverId);
 
         if (success) {
@@ -218,24 +220,9 @@ public class AdminDashboard extends javax.swing.JFrame {
     }
     
     /**
-     * Gets the selected row from the JTable and puts the values into the form fields.
-     * This is how the user edits or deletes an existing record.
+     * @param username
+     * @param role
      */
-    private void tblDriversMouseClicked(java.awt.event.MouseEvent evt) {
-        int row = tblDrivers.getSelectedRow(); // Get clicked row index
-
-        if (row != -1) {
-            // Read the row values from the table
-            selectedDriverId = Integer.parseInt(tblDrivers.getValueAt(row, 0).toString());
-            txtDriverId.setText(String.valueOf(selectedDriverId));
-            txtDriverName.setText(tblDrivers.getValueAt(row, 1).toString());
-            txtLicenseNo.setText(tblDrivers.getValueAt(row, 2).toString());
-            txtContactNo.setText(tblDrivers.getValueAt(row, 3).toString());
-            cmbStatus.setSelectedItem(tblDrivers.getValueAt(row, 4).toString());
-        }
-    }
-    
-    
     public void setUser(String username, String role) {
     lblCurrentUser.setText("User: " + username + " (" + role + ")");
     }
@@ -245,7 +232,54 @@ public class AdminDashboard extends javax.swing.JFrame {
     card.show(pnlContent, panelName); // Show the panel whose name matches panelName
     }
     
+    /*
+    ================================================================ CONTAINMENT: DRIVERS FORM PANEL ==========================================================================
+    */
     
+    private void loadDriversToTable(List<Drivers> drivers) {
+    DefaultTableModel model = (DefaultTableModel) tblDrivers.getModel();
+
+    // Remove all old rows before showing new data
+    model.setRowCount(0);
+
+    // Loop through each Driver object and put it into the JTable
+    for (Drivers d : drivers) {
+        Object[] row = {
+            d.getDriverId(),
+            d.getDriverName(),
+            d.getLicenseNo(),
+            d.getContactNo(),
+            d.getStatus()
+        };
+
+        model.addRow(row); // Add one row to the table
+        }
+    }
+    
+    private void sortDrivers() {
+    // Read the selected text from the combo box
+    String selectedSort = cmbSortDrivers.getSelectedItem().toString();
+
+    // Create DAO object to fetch sorted records
+    DriverDAO dao = new DriverDAO();
+
+    // Decide whether to sort ascending or descending
+    boolean ascending = selectedSort.equals("Sort by Name (A-Z)");
+
+    // Get the sorted driver list from the database
+    List<Drivers> drivers = dao.getDriversSortedByName(ascending);
+
+    // Load the sorted result into the JTable
+    loadDriversToTable(drivers);
+    
+    }
+    
+    
+    
+    
+    /* 
+    WITHIN THIS SECTION CONTAINS THE DRIVERS PANEL END_BORDER;=====================================
+    */
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -319,8 +353,6 @@ public class AdminDashboard extends javax.swing.JFrame {
         jLabel23 = new javax.swing.JLabel();
         pnlDrivers = new javax.swing.JPanel();
         jPanel9 = new javax.swing.JPanel();
-        jLabel10 = new javax.swing.JLabel();
-        txtDriverId = new javax.swing.JTextField();
         jLabel12 = new javax.swing.JLabel();
         jPanel10 = new javax.swing.JPanel();
         jLabel14 = new javax.swing.JLabel();
@@ -341,7 +373,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         jScrollPane4 = new javax.swing.JScrollPane();
         tblDrivers = new javax.swing.JTable();
         jPanel12 = new javax.swing.JPanel();
-        jComboBox5 = new javax.swing.JComboBox<>();
+        cmbSortDrivers = new javax.swing.JComboBox<>();
         btnSearch = new javax.swing.JButton();
         btnRefresh = new javax.swing.JButton();
         jLabel15 = new javax.swing.JLabel();
@@ -1016,8 +1048,6 @@ public class AdminDashboard extends javax.swing.JFrame {
 
         pnlDrivers.setBackground(new java.awt.Color(255, 255, 255));
 
-        jLabel10.setText("Driver ID:");
-
         jLabel12.setText("Contact No. (09XX-XXX-XXXX):");
 
         jPanel10.setBackground(new java.awt.Color(204, 204, 204));
@@ -1071,7 +1101,13 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel21.setText("Name:");
+        txtContactNo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtContactNoActionPerformed(evt);
+            }
+        });
+
+        jLabel21.setText("Full Name:");
 
         jLabel32.setText("License Number:");
 
@@ -1139,19 +1175,17 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addGap(22, 22, 22)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel12)
-                            .addComponent(jLabel10)
-                            .addComponent(txtDriverId, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
-                            .addComponent(txtContactNo))
+                            .addComponent(txtContactNo, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel21)
+                            .addComponent(txtDriverName, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel32)
+                            .addComponent(txtLicenseNo, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel13)
                             .addComponent(cmbStatus, 0, 155, Short.MAX_VALUE)))
-                    .addComponent(jLabel21)
-                    .addComponent(txtDriverName, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel32)
-                    .addComponent(txtLicenseNo, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addComponent(jPanel13, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jPanel10, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -1160,33 +1194,29 @@ public class AdminDashboard extends javax.swing.JFrame {
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel9Layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addComponent(jLabel10)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(txtDriverId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(27, 27, 27)
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel9Layout.createSequentialGroup()
                         .addComponent(jLabel13)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cmbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel21)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(txtDriverName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel32)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(txtLicenseNo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(5, 5, 5)
-                .addComponent(jLabel12)
-                .addGap(12, 12, 12)
-                .addComponent(txtContactNo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cmbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel9Layout.createSequentialGroup()
+                        .addComponent(jLabel21)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(txtDriverName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel32)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(txtLicenseNo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(jLabel12)
+                        .addGap(12, 12, 12)
+                        .addComponent(txtContactNo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
                 .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(30, 30, 30)
                 .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(83, Short.MAX_VALUE))
+                .addContainerGap(143, Short.MAX_VALUE))
         );
 
         tblDrivers.setModel(new javax.swing.table.DefaultTableModel(
@@ -1202,16 +1232,26 @@ public class AdminDashboard extends javax.swing.JFrame {
                 "Driver's ID", "Driver's Name", "License No.", "Contact No.", "Status"
             }
         ));
+        tblDrivers.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblDriversMouseClicked(evt);
+            }
+        });
         jScrollPane4.setViewportView(tblDrivers);
 
         jPanel12.setBackground(new java.awt.Color(204, 204, 204));
         jPanel12.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
         jPanel12.setForeground(new java.awt.Color(204, 204, 204));
 
-        jComboBox5.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sort by Name (A-Z)", "Sort by Name (Z-A)" }));
+        cmbSortDrivers.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sort by Name (A-Z)", "Sort by Name (Z-A)" }));
 
         btnSearch.setBackground(new java.awt.Color(213, 100, 33));
         btnSearch.setText("Search");
+        btnSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSearchActionPerformed(evt);
+            }
+        });
 
         btnRefresh.setText("Refresh");
         btnRefresh.addActionListener(new java.awt.event.ActionListener() {
@@ -1226,7 +1266,7 @@ public class AdminDashboard extends javax.swing.JFrame {
             jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel12Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jComboBox5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(cmbSortDrivers, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnSearch)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1238,7 +1278,7 @@ public class AdminDashboard extends javax.swing.JFrame {
             .addGroup(jPanel12Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jComboBox5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbSortDrivers, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -1897,6 +1937,28 @@ public class AdminDashboard extends javax.swing.JFrame {
         clearFields();   // Reset form
     }//GEN-LAST:event_btnRefreshActionPerformed
 
+    private void tblDriversMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblDriversMouseClicked
+        
+        int row = tblDrivers.getSelectedRow(); // Get clicked row index
+
+        if (row != -1) {
+            // Read the row values from the table
+            selectedDriverId = Integer.parseInt(tblDrivers.getValueAt(row, 0).toString());
+            txtDriverName.setText(tblDrivers.getValueAt(row, 1).toString());
+            txtLicenseNo.setText(tblDrivers.getValueAt(row, 2).toString());
+            txtContactNo.setText(tblDrivers.getValueAt(row, 3).toString());
+            cmbStatus.setSelectedItem(tblDrivers.getValueAt(row, 4).toString());
+        }
+    }//GEN-LAST:event_tblDriversMouseClicked
+
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+        sortDrivers();
+    }//GEN-LAST:event_btnSearchActionPerformed
+
+    private void txtContactNoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtContactNoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtContactNoActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1974,13 +2036,12 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> cmbJeepneySelect;
     private javax.swing.JComboBox<String> cmbJeepneySelect2;
     private javax.swing.JComboBox<String> cmbJeepneySelect3;
+    private javax.swing.JComboBox<String> cmbSortDrivers;
     private javax.swing.JComboBox<String> cmbStatus;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox2;
-    private javax.swing.JComboBox<String> jComboBox5;
     private javax.swing.JComboBox<String> jComboBox6;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
@@ -2070,7 +2131,6 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JTable tblDrivers;
     private javax.swing.JTable tblQueue;
     private javax.swing.JTextField txtContactNo;
-    private javax.swing.JTextField txtDriverId;
     private javax.swing.JTextField txtDriverName;
     private javax.swing.JTextField txtLicenseNo;
     // End of variables declaration//GEN-END:variables
