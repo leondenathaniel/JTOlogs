@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import model.DriverItem;
 
 /**
  * DriverDAO handles all database operations for the drivers table.
@@ -79,6 +80,29 @@ public class DriverDAO {
         }
 
         return drivers;
+    }
+        
+        
+    public List<DriverItem> getActiveDriversForComboBox() {
+        List<DriverItem> list = new ArrayList<>();
+        String sql = "SELECT driver_id, driver_name FROM drivers WHERE status = 'active' ORDER BY driver_name ASC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(new DriverItem(
+                    rs.getInt("driver_id"),
+                    rs.getString("driver_name")
+                ));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
     
     /* 

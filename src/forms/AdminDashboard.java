@@ -2,10 +2,13 @@ package forms;
 
 import java.awt.CardLayout;
 import dataaccess.DriverDAO;
+import dataaccess.JeepneyDAO;
 import model.Drivers;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import model.DriverItem;
+import model.Jeepneys;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -21,7 +24,7 @@ public class AdminDashboard extends javax.swing.JFrame {
     // Holds the currently selected driver ID from the table
     // This is important for update and delete operations.
     private int selectedDriverId = -1;
-    
+    private int selectedJeepneyId = -1;
     /**
      * Creates new form Dashboard
      */
@@ -30,6 +33,9 @@ public class AdminDashboard extends javax.swing.JFrame {
         loadDrivers();      // Load all driver records into the table on startup
         clearFields();      // Start with clean inputs
         
+        // BELOW: Related to JEEPNEY PANEL
+        hideJeepneyIdColumn();
+        loadJeepneys();
         
         
         
@@ -52,6 +58,12 @@ public class AdminDashboard extends javax.swing.JFrame {
         tblDrivers.getColumnModel().getColumn(0).setMinWidth(0);
         tblDrivers.getColumnModel().getColumn(0).setMaxWidth(0);
         tblDrivers.getColumnModel().getColumn(0).setWidth(0);
+    }
+    
+    private void hideJeepneyIdColumn() {
+        tblJeepneys.getColumnModel().getColumn(0).setMinWidth(0);
+        tblJeepneys.getColumnModel().getColumn(0).setMaxWidth(0);
+        tblJeepneys.getColumnModel().getColumn(0).setWidth(0);
     }
     
     /*
@@ -279,28 +291,179 @@ public class AdminDashboard extends javax.swing.JFrame {
     }
     
     private void loadDrivers() {
-    DriverDAO dao = new DriverDAO();
-    List<Drivers> drivers = dao.getAllDrivers();
+        DriverDAO dao = new DriverDAO();
+        List<Drivers> drivers = dao.getAllDrivers();
 
-    DefaultTableModel model = (DefaultTableModel) tblDrivers.getModel();
-    model.setRowCount(0);
+        DefaultTableModel model = (DefaultTableModel) tblDrivers.getModel();
+        model.setRowCount(0);
 
-    for (Drivers d : drivers) {
-        Object[] row = {
-            d.getDriverId(),     // hidden internal ID
-//            d.getDisplayId(),    // visible professional ID
-            d.getDriverName(),
-            d.getLicenseNo(),
-            d.getContactNo(),
-            d.getStatus()
-        };
-        model.addRow(row);
+        for (Drivers d : drivers) {
+            Object[] row = {
+                d.getDriverId(),     // hidden internal ID
+    //            d.getDisplayId(),    // visible professional ID
+                d.getDriverName(),
+                d.getLicenseNo(),
+                d.getContactNo(),
+                d.getStatus()
+            };
+            model.addRow(row);
+        }
     }
-}
+    
+
     
     
     /* 
     WITHIN THIS SECTION CONTAINS THE DRIVERS PANEL END_BORDER;=====================================
+    */
+    
+    
+    /*
+    ================================================================ CONTAINMENT: JEEPNEYS FORM PANEL ==========================================================================
+    */
+    
+    
+
+
+    private void loadJeepneys() {
+        JeepneyDAO dao = new JeepneyDAO();
+        List<Jeepneys> jeepneys = dao.getAllJeepneys();
+
+        DefaultTableModel model = (DefaultTableModel) tblJeepneys.getModel();
+        model.setRowCount(0);
+
+        for (Jeepneys j : jeepneys) {
+            Object[] row = {
+                j.getJeepneyId(),
+                j.getDisplayId(),
+                j.getPlateNo(),
+                j.getDriverId(),
+                j.getRouteName(),
+                j.getStatus()
+            };
+            model.addRow(row);
+        }
+    }
+    
+
+    
+    private void loadDriverComboBox() {
+        DriverDAO dao = new DriverDAO();
+        List<DriverItem> drivers = dao.getActiveDriversForComboBox();
+
+        cmbDriver.removeAllItems();
+
+        for (DriverItem d : drivers) {
+            cmbDriver.addItem(d);
+        }
+    }
+    
+    private Jeepneys getJeepneyFromForm() {
+        Jeepneys jeepney = new Jeepneys();
+        jeepney.setJeepneyId(selectedJeepneyId);
+        jeepney.setPlateNo(txtPlateNo.getText().trim());
+
+        DriverItem selectedDriver = (DriverItem) cmbDriver.getSelectedItem();
+        jeepney.setDriverId(selectedDriver.getDriverId());
+
+        jeepney.setRouteName(cmbRoute.getSelectedItem().toString());
+        jeepney.setStatus(cmbStatus.getSelectedItem().toString());
+
+        return jeepney;
+    }
+    
+    private void addJeepney() {
+        if (!validateJeepneyForm()) return;
+
+        Jeepneys jeepney = getJeepneyFromForm();
+
+        JeepneyDAO dao = new JeepneyDAO();
+        boolean success = dao.insertJeepney(jeepney);
+
+        if (success) {
+            JOptionPane.showMessageDialog(this, "Jeepney added successfully.");
+            loadJeepneys();
+            clearFields();
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to add jeepney.");
+        }
+    }
+    
+    
+    private void updateJeepney() {
+        if (selectedJeepneyId == -1) {
+            JOptionPane.showMessageDialog(this, "Select a jeepney first.");
+            return;
+        }
+
+        Jeepneys jeepney = getJeepneyFromForm();
+        jeepney.setJeepneyId(selectedJeepneyId);
+
+        JeepneyDAO dao = new JeepneyDAO();
+        boolean success = dao.updateJeepney(jeepney);
+
+        if (success) {
+            JOptionPane.showMessageDialog(this, "Updated successfully.");
+            loadJeepneys();
+            clearFields();
+        }
+    }
+    
+    private void deleteJeepney() {
+        if (selectedJeepneyId == -1) {
+            JOptionPane.showMessageDialog(this, "Select a jeepney first.");
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(
+            this, "Delete this jeepney?", "Confirm", JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        JeepneyDAO dao = new JeepneyDAO();
+        boolean success = dao.deleteJeepney(selectedJeepneyId);
+
+        if (success) {
+            JOptionPane.showMessageDialog(this, "Deleted successfully.");
+            loadJeepneys();
+            clearFields();
+        }
+    }
+    
+    private boolean validateJeepneyForm() {
+
+    // Plate Number validation
+    if (txtPlateNo.getText().trim().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Plate Number is required.");
+        txtPlateNo.requestFocus();
+        return false;
+    }
+
+    // Driver validation
+    if (cmbDriver.getSelectedItem() == null) {
+        JOptionPane.showMessageDialog(this, "Please select a driver.");
+        return false;
+    }
+
+    // Route validation
+    if (cmbRoute.getSelectedItem() == null) {
+        JOptionPane.showMessageDialog(this, "Please select a route.");
+        return false;
+    }
+
+    // Status validation
+    if (cmbStatus.getSelectedItem() == null) {
+        JOptionPane.showMessageDialog(this, "Please select a status.");
+        return false;
+    }
+
+    return true; // ✅ All good
+}
+    
+    
+    /* 
+    WITHIN THIS SECTION CONTAINS THE JEEPNEYS PANEL END_BORDER;=====================================
     */
     
     /**
@@ -405,27 +568,29 @@ public class AdminDashboard extends javax.swing.JFrame {
         pnlJeepneys = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        txtPlateNo = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
         jComboBox2 = new javax.swing.JComboBox<>();
-        jPanel7 = new javax.swing.JPanel();
-        jLabel8 = new javax.swing.JLabel();
-        btnDispatch1 = new javax.swing.JButton();
-        btnUndoDispatch1 = new javax.swing.JButton();
-        btnAddToQueue1 = new javax.swing.JButton();
-        btnRefreshQueue1 = new javax.swing.JButton();
-        jTextField2 = new javax.swing.JTextField();
+        jPanel17 = new javax.swing.JPanel();
+        btnUpdate1 = new javax.swing.JButton();
+        btnDelete1 = new javax.swing.JButton();
+        jLabel34 = new javax.swing.JLabel();
+        jPanel18 = new javax.swing.JPanel();
+        jLabel16 = new javax.swing.JLabel();
+        btnAdd1 = new javax.swing.JButton();
+        btnClear1 = new javax.swing.JButton();
+        cmbRoute = new javax.swing.JComboBox<>();
+        cmbDriver = new javax.swing.JComboBox<>();
         jPanel6 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblJeepneys = new javax.swing.JTable();
         jPanel8 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
-        btnDispatch2 = new javax.swing.JButton();
         btnUndoDispatch2 = new javax.swing.JButton();
         btnRefreshQueue2 = new javax.swing.JButton();
+        cmbSortDrivers1 = new javax.swing.JComboBox<>();
         lblJeepneyTitle = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
@@ -1403,88 +1568,138 @@ public class AdminDashboard extends javax.swing.JFrame {
 
         jLabel4.setText("Plate Number: ");
 
-        jLabel5.setText("Driver");
+        jLabel5.setText("Driver:");
 
-        jLabel6.setText("Route ID");
+        jLabel6.setText("Route/Destination:");
 
-        jLabel7.setText("Status");
+        jLabel7.setText("Status:");
 
         jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "AVAILABLE", "DISPATCHED", "MAINTENANCE" }));
 
-        jPanel7.setBackground(new java.awt.Color(204, 204, 204));
-        jPanel7.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
-        jPanel7.setForeground(new java.awt.Color(204, 204, 204));
+        jPanel17.setBackground(new java.awt.Color(204, 204, 204));
+        jPanel17.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
+        jPanel17.setForeground(new java.awt.Color(204, 204, 204));
 
-        jLabel8.setFont(new java.awt.Font("Rockwell", 1, 12)); // NOI18N
-        jLabel8.setForeground(new java.awt.Color(0, 0, 0));
-        jLabel8.setText("Select Jeepney:");
+        btnUpdate1.setBackground(new java.awt.Color(255, 204, 0));
+        btnUpdate1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnUpdate1.setText("Update");
+        btnUpdate1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdate1ActionPerformed(evt);
+            }
+        });
 
-        btnDispatch1.setBackground(new java.awt.Color(255, 204, 0));
-        btnDispatch1.setText("Update");
+        btnDelete1.setBackground(new java.awt.Color(204, 51, 0));
+        btnDelete1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnDelete1.setText("Delete");
+        btnDelete1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDelete1ActionPerformed(evt);
+            }
+        });
 
-        btnUndoDispatch1.setBackground(new java.awt.Color(204, 51, 0));
-        btnUndoDispatch1.setText("Delete");
+        jLabel34.setFont(new java.awt.Font("Rockwell", 1, 12)); // NOI18N
+        jLabel34.setForeground(new java.awt.Color(204, 0, 0));
+        jLabel34.setText("Management Controls:");
 
-        btnAddToQueue1.setBackground(new java.awt.Color(0, 153, 153));
-        btnAddToQueue1.setText("Add");
-
-        btnRefreshQueue1.setText("Clear");
-
-        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
-        jPanel7.setLayout(jPanel7Layout);
-        jPanel7Layout.setHorizontalGroup(
-            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel7Layout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel17Layout = new javax.swing.GroupLayout(jPanel17);
+        jPanel17.setLayout(jPanel17Layout);
+        jPanel17Layout.setHorizontalGroup(
+            jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel17Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel8)
-                    .addGroup(jPanel7Layout.createSequentialGroup()
-                        .addComponent(btnAddToQueue1)
+                .addGroup(jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel17Layout.createSequentialGroup()
+                        .addComponent(btnUpdate1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnDispatch1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnUndoDispatch1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnRefreshQueue1)))
-                .addContainerGap(20, Short.MAX_VALUE))
+                        .addComponent(btnDelete1))
+                    .addComponent(jLabel34))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jPanel7Layout.setVerticalGroup(
-            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
+        jPanel17Layout.setVerticalGroup(
+            jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel17Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel8)
+                .addComponent(jLabel34)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                .addGroup(jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnUpdate1)
+                    .addComponent(btnDelete1))
+                .addContainerGap())
+        );
+
+        jPanel18.setBackground(new java.awt.Color(204, 204, 204));
+        jPanel18.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
+        jPanel18.setForeground(new java.awt.Color(204, 204, 204));
+
+        jLabel16.setFont(new java.awt.Font("Rockwell", 1, 12)); // NOI18N
+        jLabel16.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel16.setText("Confirmation of Details:");
+
+        btnAdd1.setBackground(new java.awt.Color(0, 153, 153));
+        btnAdd1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnAdd1.setText("Add");
+        btnAdd1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAdd1ActionPerformed(evt);
+            }
+        });
+
+        btnClear1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnClear1.setText("Clear");
+        btnClear1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClear1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel18Layout = new javax.swing.GroupLayout(jPanel18);
+        jPanel18.setLayout(jPanel18Layout);
+        jPanel18Layout.setHorizontalGroup(
+            jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel18Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel16)
+                    .addGroup(jPanel18Layout.createSequentialGroup()
+                        .addComponent(btnAdd1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnClear1)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel18Layout.setVerticalGroup(
+            jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel18Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel16)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btnUndoDispatch1)
-                        .addComponent(btnRefreshQueue1))
-                    .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btnDispatch1)
-                        .addComponent(btnAddToQueue1)))
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnAdd1)
+                    .addComponent(btnClear1))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        cmbRoute.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Baliuag – Malolos", "Baliuag – Calumpit", "Baliuag – San Miguel", "Baliuag – Meycauayan", "Baliuag – Bustos" }));
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(22, 22, 22)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel7)
-                            .addComponent(jLabel6)
-                            .addComponent(jLabel5)
-                            .addComponent(jLabel4)
-                            .addComponent(jComboBox2, 0, 259, Short.MAX_VALUE)
-                            .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jTextField1)
-                            .addComponent(jTextField2)))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(50, 50, 50)
-                        .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(64, Short.MAX_VALUE))
+                .addGap(22, 22, 22)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel7)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel4)
+                    .addComponent(jComboBox2, 0, 259, Short.MAX_VALUE)
+                    .addComponent(txtPlateNo)
+                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(jPanel17, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jPanel18, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(cmbRoute, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cmbDriver, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(183, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1492,25 +1707,27 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addGap(21, 21, 21)
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtPlateNo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel5)
                 .addGap(4, 4, 4)
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(cmbDriver, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel7)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(7, 7, 7)
                 .addComponent(jLabel6)
-                .addGap(12, 12, 12)
-                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(26, 26, 26)
-                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(cmbRoute, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jPanel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jPanel17, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblJeepneys.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null},
                 {null},
@@ -1521,7 +1738,12 @@ public class AdminDashboard extends javax.swing.JFrame {
                 "Jeepneys"
             }
         ));
-        jScrollPane3.setViewportView(jTable1);
+        tblJeepneys.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblJeepneysMouseClicked(evt);
+            }
+        });
+        jScrollPane3.setViewportView(tblJeepneys);
 
         jPanel8.setBackground(new java.awt.Color(204, 204, 204));
         jPanel8.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
@@ -1531,13 +1753,17 @@ public class AdminDashboard extends javax.swing.JFrame {
         jLabel9.setForeground(new java.awt.Color(0, 0, 0));
         jLabel9.setText("Lists of Controls:");
 
-        btnDispatch2.setBackground(new java.awt.Color(0, 153, 51));
-        btnDispatch2.setText("Sort");
-
         btnUndoDispatch2.setBackground(new java.awt.Color(213, 100, 33));
         btnUndoDispatch2.setText("Search");
 
         btnRefreshQueue2.setText("Refresh");
+
+        cmbSortDrivers1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sort by Name (A-Z)", "Sort by Name (Z-A)" }));
+        cmbSortDrivers1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbSortDrivers1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
         jPanel8.setLayout(jPanel8Layout);
@@ -1545,16 +1771,15 @@ public class AdminDashboard extends javax.swing.JFrame {
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel9)
-                .addContainerGap(229, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnDispatch2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnUndoDispatch2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnRefreshQueue2)
-                .addGap(40, 40, 40))
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel8Layout.createSequentialGroup()
+                        .addComponent(cmbSortDrivers1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnUndoDispatch2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnRefreshQueue2))
+                    .addComponent(jLabel9))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1563,9 +1788,9 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addComponent(jLabel9)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnDispatch2)
                     .addComponent(btnUndoDispatch2)
-                    .addComponent(btnRefreshQueue2))
+                    .addComponent(btnRefreshQueue2)
+                    .addComponent(cmbSortDrivers1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1575,13 +1800,12 @@ public class AdminDashboard extends javax.swing.JFrame {
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel6Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
-                        .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(62, 62, 62))))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addGap(68, 68, 68)
+                .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1637,7 +1861,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addGroup(pnlJeepneysLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         pnlContent.add(pnlJeepneys, "card4");
@@ -1991,6 +2215,46 @@ public class AdminDashboard extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_cmbSortDriversActionPerformed
 
+    private void cmbSortDrivers1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSortDrivers1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbSortDrivers1ActionPerformed
+
+    private void btnUpdate1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdate1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnUpdate1ActionPerformed
+
+    private void btnDelete1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDelete1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDelete1ActionPerformed
+
+    private void btnAdd1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdd1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnAdd1ActionPerformed
+
+    private void btnClear1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClear1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnClear1ActionPerformed
+
+    private void tblJeepneysMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblJeepneysMouseClicked
+        int row = tblJeepneys.getSelectedRow();
+
+        if (row != -1) {
+            selectedJeepneyId = Integer.parseInt(tblJeepneys.getValueAt(row, 0).toString());
+            txtPlateNo.setText(tblJeepneys.getValueAt(row, 1).toString());
+            String selectedDriverName = tblJeepneys.getValueAt(row, 2).toString();
+            cmbRoute.setSelectedItem(tblJeepneys.getValueAt(row, 3).toString());
+            cmbStatus.setSelectedItem(tblJeepneys.getValueAt(row, 4).toString());
+
+            for (int i = 0; i < cmbDriver.getItemCount(); i++) {
+                DriverItem item = cmbDriver.getItemAt(i);
+                if (item.toString().equals(selectedDriverName)) {
+                    cmbDriver.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+    }//GEN-LAST:event_tblJeepneysMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -2030,8 +2294,8 @@ public class AdminDashboard extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAccounts;
     private javax.swing.JButton btnAdd;
+    private javax.swing.JButton btnAdd1;
     private javax.swing.JButton btnAddToQueue;
-    private javax.swing.JButton btnAddToQueue1;
     private javax.swing.JButton btnAddToQueue10;
     private javax.swing.JButton btnAddToQueue11;
     private javax.swing.JButton btnAddToQueue12;
@@ -2042,10 +2306,10 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JButton btnAddToQueue8;
     private javax.swing.JButton btnAddToQueue9;
     private javax.swing.JButton btnClear;
+    private javax.swing.JButton btnClear1;
     private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnDelete1;
     private javax.swing.JButton btnDispatch;
-    private javax.swing.JButton btnDispatch1;
-    private javax.swing.JButton btnDispatch2;
     private javax.swing.JButton btnDispatch5;
     private javax.swing.JButton btnDrivers;
     private javax.swing.JButton btnHome;
@@ -2054,7 +2318,6 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JButton btnQueue;
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnRefreshQueue;
-    private javax.swing.JButton btnRefreshQueue1;
     private javax.swing.JButton btnRefreshQueue2;
     private javax.swing.JButton btnRefreshQueue6;
     private javax.swing.JButton btnRefreshQueue7;
@@ -2062,15 +2325,17 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnTripHistory;
     private javax.swing.JButton btnUndoDispatch;
-    private javax.swing.JButton btnUndoDispatch1;
     private javax.swing.JButton btnUndoDispatch2;
     private javax.swing.JButton btnUpdate;
+    private javax.swing.JButton btnUpdate1;
+    private javax.swing.JComboBox<DriverItem> cmbDriver;
     private javax.swing.JComboBox<String> cmbJeepneySelect;
     private javax.swing.JComboBox<String> cmbJeepneySelect2;
     private javax.swing.JComboBox<String> cmbJeepneySelect3;
+    private javax.swing.JComboBox<String> cmbRoute;
     private javax.swing.JComboBox<String> cmbSortDrivers;
+    private javax.swing.JComboBox<String> cmbSortDrivers1;
     private javax.swing.JComboBox<String> cmbStatus;
-    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox2;
     private javax.swing.JComboBox<String> jComboBox6;
     private javax.swing.JLabel jLabel1;
@@ -2078,6 +2343,7 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
@@ -2095,11 +2361,11 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel31;
     private javax.swing.JLabel jLabel32;
     private javax.swing.JLabel jLabel33;
+    private javax.swing.JLabel jLabel34;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
@@ -2109,12 +2375,13 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel16;
+    private javax.swing.JPanel jPanel17;
+    private javax.swing.JPanel jPanel18;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
-    private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
@@ -2124,12 +2391,9 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTable jTable3;
     private javax.swing.JTable jTable4;
     private javax.swing.JTable jTable5;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField5;
     private javax.swing.JTextField jTextField6;
     private javax.swing.JTextField jTextField7;
@@ -2161,9 +2425,11 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JPanel pnlTripHistory;
     private javax.swing.JTable tblDispatched;
     private javax.swing.JTable tblDrivers;
+    private javax.swing.JTable tblJeepneys;
     private javax.swing.JTable tblQueue;
     private javax.swing.JTextField txtContactNo;
     private javax.swing.JTextField txtDriverName;
     private javax.swing.JTextField txtLicenseNo;
+    private javax.swing.JTextField txtPlateNo;
     // End of variables declaration//GEN-END:variables
 }
