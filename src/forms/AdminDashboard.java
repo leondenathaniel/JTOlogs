@@ -288,7 +288,7 @@ public class AdminDashboard extends javax.swing.JFrame {
     for (Drivers d : drivers) {
         Object[] row = {
             d.getDriverId(),     // hidden internal ID
-            d.getDisplayId(),    // visible professional ID
+//            d.getDisplayId(),    // visible professional ID
             d.getDriverName(),
             d.getLicenseNo(),
             d.getContactNo(),
@@ -1266,6 +1266,11 @@ public class AdminDashboard extends javax.swing.JFrame {
         jPanel12.setForeground(new java.awt.Color(204, 204, 204));
 
         cmbSortDrivers.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sort by Name (A-Z)", "Sort by Name (Z-A)" }));
+        cmbSortDrivers.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbSortDriversActionPerformed(evt);
+            }
+        });
 
         btnSearch.setBackground(new java.awt.Color(213, 100, 33));
         btnSearch.setText("Search");
@@ -1965,7 +1970,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         if (row != -1) {
             // ✅ ALWAYS get driver_id from hidden column 0
             selectedDriverId = Integer.parseInt(tblDrivers.getValueAt(row, 0).toString());
-
+            
             // ✅ Use correct column indexes
             txtDriverName.setText(tblDrivers.getValueAt(row, 2).toString());
             txtLicenseNo.setText(tblDrivers.getValueAt(row, 3).toString());
@@ -1981,6 +1986,10 @@ public class AdminDashboard extends javax.swing.JFrame {
     private void txtContactNoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtContactNoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtContactNoActionPerformed
+
+    private void cmbSortDriversActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSortDriversActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbSortDriversActionPerformed
 
     /**
      * @param args the command line arguments

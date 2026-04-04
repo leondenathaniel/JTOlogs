@@ -8,6 +8,6 @@ package dataaccess;
  *
  * @author Administrator
  */
-public class Jeepney {
+public class JeepneyDAO {
     
 }
