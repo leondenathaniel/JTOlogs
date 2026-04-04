@@ -12,29 +12,20 @@ public class Jeepneys {
     public Jeepneys() {
     }
 
-    public Jeepneys(int jeepneyId, String displayId, String plateNo, int driverId, String routeName, String status) {
-        this.jeepneyId = jeepneyId;
-        this.displayId = displayId;
-        this.plateNo = plateNo;
-        this.driverId = driverId;
-        this.routeName = routeName;
-        this.status = status;
-    }
-
     public int getJeepneyId() {
         return jeepneyId;
+    }
+    
+    public String getDisplayId() {
+        return displayId;
+    }
+    
+    public void setDisplayId(String displayId) {
+        this.displayId = displayId;
     }
 
     public void setJeepneyId(int jeepneyId) {
         this.jeepneyId = jeepneyId;
-    }
-
-    public String getDisplayId() {
-        return displayId;
-    }
-
-    public void setDisplayId(String displayId) {
-        this.displayId = displayId;
     }
 
     public String getPlateNo() {
@@ -51,6 +42,14 @@ public class Jeepneys {
 
     public void setDriverId(int driverId) {
         this.driverId = driverId;
+    }
+
+    public String getDriverName() {
+        return driverName;
+    }
+
+    public void setDriverName(String driverName) {
+        this.driverName = driverName;
     }
 
     public String getRouteName() {

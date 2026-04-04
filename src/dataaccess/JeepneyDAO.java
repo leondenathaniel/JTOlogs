@@ -22,7 +22,7 @@ public class JeepneyDAO {
 
             if (rs.next()) {
                 String lastId = rs.getString("display_id");
-                String numberPart = lastId.substring(4);
+                String numberPart = lastId.substring(4);   // removes "JEP-"
                 int nextNumber = Integer.parseInt(numberPart) + 1;
                 nextId = String.format("JEP-%04d", nextNumber);
             }
@@ -39,22 +39,31 @@ public class JeepneyDAO {
     */
 
     public boolean insertJeepney(Jeepneys jeepney) {
-        String sql = "INSERT INTO jeepneys (plate_no, driver_id, route_name, status) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO jeepneys (display_id, plate_no, driver_id, route_name, status) " +
+                     "VALUES (?, ?, ?, ?, ?)";
+
+        String displayId = generateNextJeepneyDisplayId();
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pst = conn.prepareStatement(sql)) {
 
-            pst.setString(1, jeepney.getPlateNo());
-            pst.setInt(2, jeepney.getDriverId());
-            pst.setString(3, jeepney.getRouteName());
-            pst.setString(4, jeepney.getStatus());
+            pst.setString(1, displayId);
+            pst.setString(2, jeepney.getPlateNo());
+            pst.setInt(3, jeepney.getDriverId());
+            pst.setString(4, jeepney.getRouteName());
+            pst.setString(5, jeepney.getStatus());
 
-            return pst.executeUpdate() > 0;
+            int rows = pst.executeUpdate();
+            if (rows > 0) {
+                jeepney.setDisplayId(displayId);
+                return true;
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+
+        return false;
     }
     
     public boolean updateJeepney(Jeepneys jeepney) {
@@ -102,24 +111,24 @@ public class JeepneyDAO {
     public List<Jeepneys> getAllJeepneys() {
         List<Jeepneys> jeepneys = new ArrayList<>();
 
-        String sql = "SELECT jeepney_id, display_id, plate_no, driver_id, route_name, status " +
-                     "FROM jeepneys " +
-                     "ORDER BY CAST(SUBSTRING(display_id, 5) AS UNSIGNED) ASC";
+        String sql = "SELECT j.jeepney_id, j.plate_no, j.driver_id, d.driver_name, j.route_name, j.status " +
+                     "FROM jeepneys j " +
+                     "LEFT JOIN drivers d ON j.driver_id = d.driver_id " +
+                     "ORDER BY j.plate_no ASC";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pst = conn.prepareStatement(sql);
              ResultSet rs = pst.executeQuery()) {
 
             while (rs.next()) {
-                Jeepneys jeepney = new Jeepneys();
-                jeepney.setJeepneyId(rs.getInt("jeepney_id"));
-                jeepney.setDisplayId(rs.getString("display_id"));
-                jeepney.setPlateNo(rs.getString("plate_no"));
-                jeepney.setDriverId(rs.getInt("driver_id"));
-                jeepney.setRouteName(rs.getString("route_name"));
-                jeepney.setStatus(rs.getString("status"));
-
-                jeepneys.add(jeepney);
+                Jeepneys j = new Jeepneys();
+                j.setJeepneyId(rs.getInt("jeepney_id"));
+                j.setPlateNo(rs.getString("plate_no"));
+                j.setDriverId(rs.getInt("driver_id"));
+                j.setDriverName(rs.getString("driver_name"));
+                j.setRouteName(rs.getString("route_name"));
+                j.setStatus(rs.getString("status"));
+                jeepneys.add(j);
             }
 
         } catch (SQLException e) {
@@ -148,7 +157,7 @@ public class JeepneyDAO {
                 while (rs.next()) {
                     Jeepneys jeepney = new Jeepneys();
                     jeepney.setJeepneyId(rs.getInt("jeepney_id"));
-                    jeepney.setDisplayId(rs.getString("display_id"));
+                    jeepney.setDriverName(rs.getString("display_id"));
                     jeepney.setPlateNo(rs.getString("plate_no"));
                     jeepney.setDriverId(rs.getInt("driver_id"));
                     jeepney.setRouteName(rs.getString("route_name"));

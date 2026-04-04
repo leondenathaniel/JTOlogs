@@ -34,8 +34,11 @@ public class AdminDashboard extends javax.swing.JFrame {
         clearFields();      // Start with clean inputs
         
         // BELOW: Related to JEEPNEY PANEL
-        hideJeepneyIdColumn();
         loadJeepneys();
+        loadDriverComboBox();
+        loadStatusComboBox();
+        loadRouteComboBox();
+        
         
         
         
@@ -63,7 +66,7 @@ public class AdminDashboard extends javax.swing.JFrame {
     private void hideJeepneyIdColumn() {
         tblJeepneys.getColumnModel().getColumn(0).setMinWidth(0);
         tblJeepneys.getColumnModel().getColumn(0).setMaxWidth(0);
-        tblJeepneys.getColumnModel().getColumn(0).setWidth(0);
+        tblJeepneys.getColumnModel().getColumn(0).setPreferredWidth(0);
     }
     
     /*
@@ -82,7 +85,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         driver.setDriverName(txtDriverName.getText().trim());
         driver.setLicenseNo(txtLicenseNo.getText().trim());
         driver.setContactNo(txtContactNo.getText().trim());
-        driver.setStatus(cmbStatus.getSelectedItem().toString());
+        driver.setStatus(jComboBox2.getSelectedItem().toString());
 
         return driver;
     }
@@ -117,7 +120,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         txtDriverName.setText("");
         txtLicenseNo.setText("");
         txtContactNo.setText("");
-        cmbStatus.setSelectedIndex(0);
+        jComboBox2.setSelectedIndex(0);
         selectedDriverId = -1;
         tblDrivers.clearSelection();
     }
@@ -321,8 +324,6 @@ public class AdminDashboard extends javax.swing.JFrame {
     /*
     ================================================================ CONTAINMENT: JEEPNEYS FORM PANEL ==========================================================================
     */
-    
-    
 
 
     private void loadJeepneys() {
@@ -334,17 +335,16 @@ public class AdminDashboard extends javax.swing.JFrame {
 
         for (Jeepneys j : jeepneys) {
             Object[] row = {
-                j.getJeepneyId(),
-                j.getDisplayId(),
-                j.getPlateNo(),
-                j.getDriverId(),
-                j.getRouteName(),
-                j.getStatus()
+                j.getJeepneyId(),   // column 0
+                j.getPlateNo(),     // column 1
+                j.getDriverName(),  // column 2
+                j.getRouteName(),   // column 3
+                j.getStatus()       // column 4
             };
             model.addRow(row);
         }
     }
-    
+
 
     
     private void loadDriverComboBox() {
@@ -367,7 +367,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         jeepney.setDriverId(selectedDriver.getDriverId());
 
         jeepney.setRouteName(cmbRoute.getSelectedItem().toString());
-        jeepney.setStatus(cmbStatus.getSelectedItem().toString());
+        jeepney.setStatus(jComboBox2.getSelectedItem().toString());
 
         return jeepney;
     }
@@ -376,8 +376,8 @@ public class AdminDashboard extends javax.swing.JFrame {
         if (!validateJeepneyForm()) return;
 
         Jeepneys jeepney = getJeepneyFromForm();
-
         JeepneyDAO dao = new JeepneyDAO();
+
         boolean success = dao.insertJeepney(jeepney);
 
         if (success) {
@@ -453,13 +453,30 @@ public class AdminDashboard extends javax.swing.JFrame {
     }
 
     // Status validation
-    if (cmbStatus.getSelectedItem() == null) {
+    if (jComboBox2.getSelectedItem() == null) {
         JOptionPane.showMessageDialog(this, "Please select a status.");
         return false;
     }
 
     return true; // ✅ All good
 }
+    
+    private void loadStatusComboBox() {
+        jComboBox2.removeAllItems();
+        jComboBox2.addItem("AVAILABLE");
+        jComboBox2.addItem("DISPATCHED");
+        jComboBox2.addItem("MAINTENANCE");
+    }
+    
+    private void loadRouteComboBox() {
+        cmbRoute.removeAllItems();
+        cmbRoute.addItem("Baliuag – Malolos");
+        cmbRoute.addItem("Baliuag – Calumpit");
+        cmbRoute.addItem("Baliuag – San Miguel");
+        cmbRoute.addItem("Baliuag – Meycauayan");
+        cmbRoute.addItem("Baliuag – Bustos");
+    }
+
     
     
     /* 
@@ -1688,18 +1705,18 @@ public class AdminDashboard extends javax.swing.JFrame {
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addGap(22, 22, 22)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabel5)
-                    .addComponent(jLabel4)
-                    .addComponent(jComboBox2, 0, 259, Short.MAX_VALUE)
+                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jLabel7)
+                        .addComponent(jLabel6)
+                        .addComponent(jLabel5)
+                        .addComponent(jLabel4)
+                        .addComponent(jPanel17, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jPanel18, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(txtPlateNo)
-                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jPanel17, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel18, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(cmbRoute, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(cmbDriver, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(183, Short.MAX_VALUE))
+                    .addComponent(cmbDriver, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cmbRoute, 0, 225, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1729,13 +1746,13 @@ public class AdminDashboard extends javax.swing.JFrame {
 
         tblJeepneys.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null},
-                {null},
-                {null},
-                {null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Jeepneys"
+                "Jeepney ID", "Plate No.", "Driver", "Route", "Status"
             }
         ));
         tblJeepneys.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1798,12 +1815,12 @@ public class AdminDashboard extends javax.swing.JFrame {
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel6Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 605, Short.MAX_VALUE)
                 .addContainerGap())
             .addGroup(jPanel6Layout.createSequentialGroup()
-                .addGap(68, 68, 68)
+                .addGap(133, 133, 133)
                 .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -1840,11 +1857,11 @@ public class AdminDashboard extends javax.swing.JFrame {
             .addGroup(pnlJeepneysLayout.createSequentialGroup()
                 .addGap(19, 19, 19)
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(24, 24, 24))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlJeepneysLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(365, Short.MAX_VALUE)
                 .addComponent(lblJeepneyTitle)
                 .addGap(356, 356, 356))
         );
@@ -2189,18 +2206,24 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_btnRefreshActionPerformed
 
     private void tblDriversMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblDriversMouseClicked
-        int row = tblDrivers.getSelectedRow();
+        int row = tblJeepneys.getSelectedRow();
 
-        if (row != -1) {
-            // ✅ ALWAYS get driver_id from hidden column 0
-            selectedDriverId = Integer.parseInt(tblDrivers.getValueAt(row, 0).toString());
-            
-            // ✅ Use correct column indexes
-            txtDriverName.setText(tblDrivers.getValueAt(row, 2).toString());
-            txtLicenseNo.setText(tblDrivers.getValueAt(row, 3).toString());
-            txtContactNo.setText(tblDrivers.getValueAt(row, 4).toString());
-            cmbStatus.setSelectedItem(tblDrivers.getValueAt(row, 5).toString());
-        }
+            if (row != -1) {
+                selectedJeepneyId = Integer.parseInt(tblJeepneys.getValueAt(row, 0).toString());
+
+                txtPlateNo.setText(tblJeepneys.getValueAt(row, 1).toString());
+                String selectedDriverName = tblJeepneys.getValueAt(row, 2).toString();
+                cmbRoute.setSelectedItem(tblJeepneys.getValueAt(row, 3).toString());
+                cmbStatus.setSelectedItem(tblJeepneys.getValueAt(row, 4).toString());
+
+                for (int i = 0; i < cmbDriver.getItemCount(); i++) {
+                    DriverItem item = cmbDriver.getItemAt(i);
+                    if (item.toString().equals(selectedDriverName)) {
+                        cmbDriver.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
     }//GEN-LAST:event_tblDriversMouseClicked
 
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
@@ -2220,19 +2243,19 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_cmbSortDrivers1ActionPerformed
 
     private void btnUpdate1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdate1ActionPerformed
-        // TODO add your handling code here:
+        updateJeepney();
     }//GEN-LAST:event_btnUpdate1ActionPerformed
 
     private void btnDelete1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDelete1ActionPerformed
-        // TODO add your handling code here:
+        deleteJeepney();
     }//GEN-LAST:event_btnDelete1ActionPerformed
 
     private void btnAdd1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdd1ActionPerformed
-        // TODO add your handling code here:
+        addJeepney();
     }//GEN-LAST:event_btnAdd1ActionPerformed
 
     private void btnClear1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClear1ActionPerformed
-        // TODO add your handling code here:
+        clearFields();
     }//GEN-LAST:event_btnClear1ActionPerformed
 
     private void tblJeepneysMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblJeepneysMouseClicked
@@ -2243,7 +2266,7 @@ public class AdminDashboard extends javax.swing.JFrame {
             txtPlateNo.setText(tblJeepneys.getValueAt(row, 1).toString());
             String selectedDriverName = tblJeepneys.getValueAt(row, 2).toString();
             cmbRoute.setSelectedItem(tblJeepneys.getValueAt(row, 3).toString());
-            cmbStatus.setSelectedItem(tblJeepneys.getValueAt(row, 4).toString());
+            jComboBox2.setSelectedItem(tblJeepneys.getValueAt(row, 4).toString());
 
             for (int i = 0; i < cmbDriver.getItemCount(); i++) {
                 DriverItem item = cmbDriver.getItemAt(i);
