@@ -3,12 +3,15 @@ package forms;
 import java.awt.CardLayout;
 import dataaccess.DriverDAO;
 import dataaccess.JeepneyDAO;
+import dataaccess.QueueDAO;
 import model.Drivers;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import model.DriverItem;
+import model.JeepneySelectItem;
 import model.Jeepneys;
+import model.QueueItem;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -25,6 +28,13 @@ public class AdminDashboard extends javax.swing.JFrame {
     // This is important for update and delete operations.
     private int selectedDriverId = -1;
     private int selectedJeepneyId = -1;
+    
+        // BELOW: Related to QueueForm.java or QUEUE PANEL
+        private int selectedQueueId = -1;
+        private int selectedQueueJeepneyId = -1;
+        private int selectedDispatchedQueueId = -1;
+        private int selectedDispatchedJeepneyId = -1;
+        
     /**
      * Creates new form Dashboard
      */
@@ -39,9 +49,12 @@ public class AdminDashboard extends javax.swing.JFrame {
         loadStatusComboBox();
         loadRouteComboBox();
         
+        // BELOW: Related to QUEUE PANEL
+        loadJeepneyComboBox();   // MUST exist
+        loadQueueTable();
+        loadDispatchedTable();
         
-        
-        
+
         
     // Add the panels to the CardLayout using card names
     pnlContent.add(pnlHome, "HOME");
@@ -481,6 +494,87 @@ public class AdminDashboard extends javax.swing.JFrame {
     
     /* 
     WITHIN THIS SECTION CONTAINS THE JEEPNEYS PANEL END_BORDER;=====================================
+    */
+    
+    
+    /*
+    ========================= CONTAINMENT RELATED: QueueForm.java or QUEUE PANEL =============================================
+    */
+    
+//    1ST
+    
+    private void refreshQueueData() {
+        loadJeepneyComboBox();
+        loadQueueTable();
+        loadDispatchedTable();
+    }
+
+    
+    
+//    2ND 
+    
+    private void loadJeepneyComboBox() {
+        QueueDAO dao = new QueueDAO();
+        List<JeepneySelectItem> jeepneys = dao.getAvailableJeepneysForComboBox();
+
+        cmbJeepneySelect.removeAllItems();
+
+        System.out.println("Jeepneys loaded: " + jeepneys.size()); // DEBUG
+
+        for (JeepneySelectItem item : jeepneys) {
+            cmbJeepneySelect.addItem(item);
+        }
+    }
+    
+//      3RD
+    
+    private void loadQueueTable() {
+        QueueDAO dao = new QueueDAO();
+        List<QueueItem> queueItems = dao.getQueuedJeepneys();
+
+        DefaultTableModel model = (DefaultTableModel) tblQueue.getModel();
+        model.setRowCount(0);
+
+        for (QueueItem q : queueItems) {
+            model.addRow(new Object[] {
+                q.getQueueId(),
+                q.getJeepneyId(),
+                q.getDisplayId(),
+                q.getPlateNo(),
+                q.getDriverName(),
+                q.getRouteName(),
+                q.getQueueTime(),
+                q.getStatus()
+            });
+        }
+    }
+    
+    
+//    4TH
+    
+    private void loadDispatchedTable() {
+        QueueDAO dao = new QueueDAO();
+        List<QueueItem> dispatchedItems = dao.getDispatchedJeepneys();
+
+        DefaultTableModel model = (DefaultTableModel) tblDispatched.getModel();
+        model.setRowCount(0);
+
+        for (QueueItem q : dispatchedItems) {
+            model.addRow(new Object[] {
+                q.getQueueId(),
+                q.getJeepneyId(),
+                q.getDisplayId(),
+                q.getPlateNo(),
+                q.getDriverName(),
+                q.getRouteName(),
+                q.getQueueTime(),
+                q.getStatus()
+            });
+        }
+    }
+    
+    /* 
+    WITHIN THIS SECTION CONTAINS THE QueueForm.java or QUEUE PANEL END_BORDER;=====================================
     */
     
     /**
@@ -1993,6 +2087,20 @@ public class AdminDashboard extends javax.swing.JFrame {
                 "Jeepneys in Queue"
             }
         ));
+        tblQueue.addAncestorListener(new javax.swing.event.AncestorListener() {
+            public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
+                tblQueueAncestorAdded(evt);
+            }
+            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+            }
+        });
+        tblQueue.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblQueueMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(tblQueue);
 
         tblDispatched.setModel(new javax.swing.table.DefaultTableModel(
@@ -2006,6 +2114,11 @@ public class AdminDashboard extends javax.swing.JFrame {
                 "Dispatched Jeepneys"
             }
         ));
+        tblDispatched.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblDispatchedMouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(tblDispatched);
 
         jPanel4.setBackground(new java.awt.Color(204, 204, 204));
@@ -2015,14 +2128,35 @@ public class AdminDashboard extends javax.swing.JFrame {
         jLabel2.setForeground(new java.awt.Color(0, 0, 0));
         jLabel2.setText("Select Jeepney:");
 
+        cmbJeepneySelect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbJeepneySelectActionPerformed(evt);
+            }
+        });
+
         btnDispatch.setBackground(new java.awt.Color(0, 153, 0));
         btnDispatch.setText("Dispatch");
+        btnDispatch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDispatchActionPerformed(evt);
+            }
+        });
 
         btnMarkFinished.setBackground(new java.awt.Color(153, 0, 0));
         btnMarkFinished.setText("Mark Finished");
+        btnMarkFinished.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMarkFinishedActionPerformed(evt);
+            }
+        });
 
         btnAddToQueue.setBackground(new java.awt.Color(0, 153, 153));
         btnAddToQueue.setText("Add to Queue");
+        btnAddToQueue.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddToQueueActionPerformed(evt);
+            }
+        });
 
         btnRefreshQueue.setText("Refresh");
 
@@ -2286,8 +2420,78 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_tblJeepneysMouseClicked
 
     private void btnRemoveQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveQueueActionPerformed
-        // TODO add your handling code here:
+        if (selectedQueueId == -1) return;
+
+        QueueDAO dao = new QueueDAO();
+        if (dao.removeQueue(selectedQueueId, selectedQueueJeepneyId)) {
+            JOptionPane.showMessageDialog(this, "Jeepney removed from queue.");
+            refreshQueueData();
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to remove jeepney.");
+        }
     }//GEN-LAST:event_btnRemoveQueueActionPerformed
+
+    private void btnAddToQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddToQueueActionPerformed
+        if (cmbJeepneySelect.getSelectedItem() == null) return;
+
+        JeepneySelectItem selected = (JeepneySelectItem) cmbJeepneySelect.getSelectedItem();
+        QueueDAO dao = new QueueDAO();
+
+        if (dao.addJeepneyToQueue(selected.getJeepneyId())) {
+            JOptionPane.showMessageDialog(this, "Jeepney added to queue.");
+            refreshQueueData();
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to add jeepney to queue.");
+        }
+    }//GEN-LAST:event_btnAddToQueueActionPerformed
+
+    private void btnDispatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDispatchActionPerformed
+        if (selectedQueueId == -1) return;
+
+        QueueDAO dao = new QueueDAO();
+        if (dao.dispatchQueue(selectedQueueId, selectedQueueJeepneyId)) {
+            JOptionPane.showMessageDialog(this, "Jeepney dispatched.");
+            refreshQueueData();
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to dispatch jeepney.");
+        }
+    }//GEN-LAST:event_btnDispatchActionPerformed
+
+    private void btnMarkFinishedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMarkFinishedActionPerformed
+        if (selectedDispatchedQueueId == -1) return;
+
+        QueueDAO dao = new QueueDAO();
+        if (dao.markFinished(selectedDispatchedQueueId, selectedDispatchedJeepneyId)) {
+            JOptionPane.showMessageDialog(this, "Jeepney marked as finished.");
+            refreshQueueData();
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to mark as finished.");
+        }
+    }//GEN-LAST:event_btnMarkFinishedActionPerformed
+
+    private void tblQueueMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblQueueMouseClicked
+        int row = tblQueue.getSelectedRow();
+            if (row != -1) {
+                selectedQueueId = Integer.parseInt(tblQueue.getValueAt(row, 0).toString());
+                selectedQueueJeepneyId = Integer.parseInt(tblQueue.getValueAt(row, 1).toString());
+            }
+    }//GEN-LAST:event_tblQueueMouseClicked
+
+    private void tblDispatchedMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblDispatchedMouseClicked
+        int row = tblDispatched.getSelectedRow();
+            if (row != -1) {
+                selectedDispatchedQueueId = Integer.parseInt(tblDispatched.getValueAt(row, 0).toString());
+                selectedDispatchedJeepneyId = Integer.parseInt(tblDispatched.getValueAt(row, 1).toString());
+            }
+    }//GEN-LAST:event_tblDispatchedMouseClicked
+
+    private void tblQueueAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_tblQueueAncestorAdded
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tblQueueAncestorAdded
+
+    private void cmbJeepneySelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbJeepneySelectActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbJeepneySelectActionPerformed
 
     /**
      * @param args the command line arguments
@@ -2364,7 +2568,7 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JButton btnUpdate;
     private javax.swing.JButton btnUpdate1;
     private javax.swing.JComboBox<DriverItem> cmbDriver;
-    private javax.swing.JComboBox<String> cmbJeepneySelect;
+    private javax.swing.JComboBox<JeepneySelectItem> cmbJeepneySelect;
     private javax.swing.JComboBox<String> cmbJeepneySelect2;
     private javax.swing.JComboBox<String> cmbJeepneySelect3;
     private javax.swing.JComboBox<String> cmbRoute;
