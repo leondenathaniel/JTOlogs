@@ -2376,8 +2376,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="32767" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jPanel4" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
                               <Component id="lblQueueTitle" min="-2" max="-2" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <Component id="jScrollPane1" min="-2" max="-2" attributes="0"/>
@@ -2388,8 +2387,9 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="jScrollBar2" min="-2" max="-2" attributes="0"/>
                               </Group>
+                              <Component id="jPanel4" alignment="0" max="32767" attributes="0"/>
                           </Group>
-                          <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="64" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -2514,12 +2514,14 @@
                               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="cmbJeepneySelect" min="-2" pref="182" max="-2" attributes="0"/>
-                              <EmptySpace pref="245" max="32767" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                               <Component id="btnAddToQueue" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="btnRemoveQueue" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btnDispatch" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="btnUndoDispatch" min="-2" max="-2" attributes="0"/>
+                              <Component id="btnMarkFinished" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btnRefreshQueue" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -2533,10 +2535,11 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="cmbJeepneySelect" alignment="3" max="32767" attributes="0"/>
                                   <Component id="btnDispatch" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="btnUndoDispatch" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btnMarkFinished" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="btnRefreshQueue" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="btnAddToQueue" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btnRemoveQueue" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
@@ -2558,12 +2561,7 @@
                     <Component class="javax.swing.JComboBox" name="cmbJeepneySelect">
                       <Properties>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                          <StringArray count="4">
-                            <StringItem index="0" value="Item 1"/>
-                            <StringItem index="1" value="Item 2"/>
-                            <StringItem index="2" value="Item 3"/>
-                            <StringItem index="3" value="Item 4"/>
-                          </StringArray>
+                          <StringArray count="0"/>
                         </Property>
                       </Properties>
                       <AuxValues>
@@ -2573,17 +2571,17 @@
                     <Component class="javax.swing.JButton" name="btnDispatch">
                       <Properties>
                         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                          <Color blue="33" green="99" red="0" type="rgb"/>
+                          <Color blue="0" green="99" red="0" type="rgb"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Dispatch"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JButton" name="btnUndoDispatch">
+                    <Component class="javax.swing.JButton" name="btnMarkFinished">
                       <Properties>
                         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                          <Color blue="18" green="ac" red="ff" type="rgb"/>
+                          <Color blue="0" green="0" red="99" type="rgb"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Undo Dispatch"/>
+                        <Property name="text" type="java.lang.String" value="Mark Finished"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JButton" name="btnAddToQueue">
@@ -2598,6 +2596,17 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Refresh"/>
                       </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="btnRemoveQueue">
+                      <Properties>
+                        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="0" green="66" red="ff" type="rgb"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Remove from Queue"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnRemoveQueueActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>

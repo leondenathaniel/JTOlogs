@@ -628,9 +628,10 @@ public class AdminDashboard extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         cmbJeepneySelect = new javax.swing.JComboBox<>();
         btnDispatch = new javax.swing.JButton();
-        btnUndoDispatch = new javax.swing.JButton();
+        btnMarkFinished = new javax.swing.JButton();
         btnAddToQueue = new javax.swing.JButton();
         btnRefreshQueue = new javax.swing.JButton();
+        btnRemoveQueue = new javax.swing.JButton();
         jScrollBar1 = new javax.swing.JScrollBar();
         jScrollBar2 = new javax.swing.JScrollBar();
 
@@ -2014,18 +2015,24 @@ public class AdminDashboard extends javax.swing.JFrame {
         jLabel2.setForeground(new java.awt.Color(0, 0, 0));
         jLabel2.setText("Select Jeepney:");
 
-        cmbJeepneySelect.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        btnDispatch.setBackground(new java.awt.Color(0, 153, 51));
+        btnDispatch.setBackground(new java.awt.Color(0, 153, 0));
         btnDispatch.setText("Dispatch");
 
-        btnUndoDispatch.setBackground(new java.awt.Color(255, 172, 24));
-        btnUndoDispatch.setText("Undo Dispatch");
+        btnMarkFinished.setBackground(new java.awt.Color(153, 0, 0));
+        btnMarkFinished.setText("Mark Finished");
 
         btnAddToQueue.setBackground(new java.awt.Color(0, 153, 153));
         btnAddToQueue.setText("Add to Queue");
 
         btnRefreshQueue.setText("Refresh");
+
+        btnRemoveQueue.setBackground(new java.awt.Color(255, 102, 0));
+        btnRemoveQueue.setText("Remove from Queue");
+        btnRemoveQueue.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRemoveQueueActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -2036,12 +2043,14 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cmbJeepneySelect, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 245, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnAddToQueue)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnRemoveQueue)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnDispatch)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnUndoDispatch)
+                .addComponent(btnMarkFinished)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnRefreshQueue)
                 .addContainerGap())
@@ -2053,10 +2062,11 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cmbJeepneySelect)
                     .addComponent(btnDispatch)
-                    .addComponent(btnUndoDispatch)
+                    .addComponent(btnMarkFinished)
                     .addComponent(btnRefreshQueue)
                     .addComponent(btnAddToQueue)
-                    .addComponent(jLabel2))
+                    .addComponent(jLabel2)
+                    .addComponent(btnRemoveQueue))
                 .addContainerGap())
         );
 
@@ -2066,8 +2076,7 @@ public class AdminDashboard extends javax.swing.JFrame {
             pnlQueueLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlQueueLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(pnlQueueLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(pnlQueueLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(lblQueueTitle)
                     .addGroup(pnlQueueLayout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2076,8 +2085,9 @@ public class AdminDashboard extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollBar2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(40, 40, 40))
+                        .addComponent(jScrollBar2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(64, 64, 64))
         );
         pnlQueueLayout.setVerticalGroup(
             pnlQueueLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2275,6 +2285,10 @@ public class AdminDashboard extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_tblJeepneysMouseClicked
 
+    private void btnRemoveQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveQueueActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnRemoveQueueActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -2335,16 +2349,17 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JButton btnHome;
     private javax.swing.JButton btnJeepneys;
     private javax.swing.JButton btnLogout;
+    private javax.swing.JButton btnMarkFinished;
     private javax.swing.JButton btnQueue;
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnRefreshQueue;
     private javax.swing.JButton btnRefreshQueue2;
     private javax.swing.JButton btnRefreshQueue6;
     private javax.swing.JButton btnRefreshQueue7;
+    private javax.swing.JButton btnRemoveQueue;
     private javax.swing.JButton btnReports;
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnTripHistory;
-    private javax.swing.JButton btnUndoDispatch;
     private javax.swing.JButton btnUndoDispatch2;
     private javax.swing.JButton btnUpdate;
     private javax.swing.JButton btnUpdate1;
