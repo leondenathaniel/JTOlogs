@@ -85,7 +85,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         driver.setDriverName(txtDriverName.getText().trim());
         driver.setLicenseNo(txtLicenseNo.getText().trim());
         driver.setContactNo(txtContactNo.getText().trim());
-        driver.setStatus(jComboBox2.getSelectedItem().toString());
+        driver.setStatus(cmbStatus.getSelectedItem().toString());
 
         return driver;
     }
